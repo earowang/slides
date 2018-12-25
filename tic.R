@@ -30,8 +30,7 @@ get_stage("deploy") %>%
       write_utf8("README.md", done)
     }
   ) %>% 
-  add_step(step_setup_push_deploy(orphan = FALSE, branch = "master", checkout = FALSE)) %>% 
-  add_step(step_do_push_deploy(commit_paths = "README.md"))
+  add_step(step_push_deploy())
 
 if (Sys.getenv("id_rsa") != "") {
   # pkgdown documentation can be built optionally. Other example criteria:
@@ -68,6 +67,5 @@ if (Sys.getenv("id_rsa") != "") {
         write_utf8("README.md", done)
       }
     ) %>% 
-    add_step(step_setup_push_deploy(orphan = FALSE, branch = "master", checkout = FALSE)) %>% 
-    add_step(step_do_push_deploy(commit_paths = "README.md"))
+    add_step(step_push_deploy())
 }
