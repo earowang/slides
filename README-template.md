@@ -18,5 +18,5 @@ watchman -- trigger $PWD auto-commit '**/*' -- ./auto-commit.sh
 [![CC BY NC 4.0](https://img.shields.io/badge/License-CC%20BY%20NC%204.0-green.svg)](https://creativecommons.org/licenses/by-nc/4.0/)
 
 {{#talks}}
-* View slides at <https://slides.earo.me/{{repo}}> ==> [source code](https://github.com/earowang/{{repo}})
+* {{repo}}: [slides](https://slides.earo.me/{{repo}}); [source code](https://github.com/earowang/{{repo}})
 {{/talks}}
