@@ -30,7 +30,7 @@ get_stage("deploy") %>%
       write_utf8("README.md", done)
     }
   ) %>% 
-  add_step(step_setup_push_deploy(branch = "master", checkout = FALSE)) %>% 
+  add_step(step_setup_push_deploy(orphan = FALSE, branch = "master", checkout = FALSE)) %>% 
   add_step(step_do_push_deploy(commit_paths = "README.md"))
 
 if (Sys.getenv("id_rsa") != "") {
@@ -68,6 +68,6 @@ if (Sys.getenv("id_rsa") != "") {
         write_utf8("README.md", done)
       }
     ) %>% 
-    add_step(step_setup_push_deploy(branch = "master", checkout = FALSE)) %>% 
+    add_step(step_setup_push_deploy(orphan = FALSE, branch = "master", checkout = FALSE)) %>% 
     add_step(step_do_push_deploy(commit_paths = "README.md"))
 }
