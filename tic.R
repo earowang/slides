@@ -7,7 +7,10 @@ get_stage("install") %>%
 get_stage("deploy") %>%
   add_code_step(
     call = {
-      talks <- whisker::iteratelist(fs::dir_ls(type = "directory"), value = "repo")
+      talks <- whisker::iteratelist(
+        gsub("^_site/", "", fs::dir_ls("_site/", type = "directory")),
+        value = "repo"
+      )
 
       # usethis:::write_utf8
       write_utf8 <- function (path, lines) {
@@ -42,7 +45,10 @@ if (Sys.getenv("id_rsa") != "") {
   get_stage("deploy") %>%
     add_code_step(
       call = {
-        talks <- whisker::iteratelist(fs::dir_ls(type = "directory"), value = "repo")
+        talks <- whisker::iteratelist(
+          gsub("^_site/", "", fs::dir_ls("_site/", type = "directory")),
+          value = "repo"
+        )
 
         # usethis:::write_utf8
         write_utf8 <- function (path, lines) {
