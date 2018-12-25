@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><i class="fa  fa-calendar "></i> Calendar-based Graphics   for   Visualizing People’s Daily Schedules</title>
+    <meta charset="utf-8">
+    <meta name="author" content="Earo Wang     Monash University" />
+    <link href="index_files/remark-css/default.css" rel="stylesheet" />
+    <link href="index_files/font-awesome/css/font-awesome.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="myremark.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# <i class="fa  fa-calendar "></i> Calendar-based Graphics <br> for <br> Visualizing People’s Daily Schedules
+### Earo Wang <br><br> <i class='fa fa-university' aria-hidden='true'></i> Monash University
+### Feb 09, 2018 <br> slides at <a href="http://slides.earo.me/gwg18" class="uri">http://slides.earo.me/gwg18</a>
+
+---
+
+
+class: middle center
+
+
+
+background-image: url(img/sensor.png)
+background-size: 55%
+
+# .blue[Melbourne pedestrian activity]
+
+---
+
+.left-column[
+## Pedestrian counting system
+### - sensors
+]
+.right-column[
+## The city of Melbourne
+&lt;img src="figure/sensor-map-1.svg" style="display: block; margin: auto;" /&gt;
+
+
+]
+
+---
+
+.left-column[
+## Pedestrian counting system
+### - sensors
+### - the data
+]
+.right-column[
+* Sourced from [Melbourne open data portal](http://www.pedestrian.melbourne.vic.gov.au)
+* Access the pedestrian data through the [rwalkr](http://pkg.earo.me/rwalkr/) package
+* Data over the year of 2017
+
+
+```
+#&gt; # A tibble: 455,520 x 6
+#&gt;    Sensor        Date_Time           Date        Time Count
+#&gt;    &lt;chr&gt;         &lt;dttm&gt;              &lt;date&gt;     &lt;int&gt; &lt;int&gt;
+#&gt;  1 Alfred Place  2017-01-01 00:00:00 2017-01-01     0   222
+#&gt;  2 Australia on… 2017-01-01 00:00:00 2017-01-01     0  1358
+#&gt;  3 Birrarung Ma… 2017-01-01 00:00:00 2017-01-01     0  1099
+#&gt;  4 Bourke St-Ru… 2017-01-01 00:00:00 2017-01-01     0  1916
+#&gt;  5 Bourke Stree… 2017-01-01 00:00:00 2017-01-01     0   855
+#&gt;  6 Bourke Stree… 2017-01-01 00:00:00 2017-01-01     0   855
+#&gt;  7 Chinatown-Lt… 2017-01-01 00:00:00 2017-01-01     0   353
+#&gt;  8 Chinatown-Sw… 2017-01-01 00:00:00 2017-01-01     0   697
+#&gt;  9 City Square   2017-01-01 00:00:00 2017-01-01     0  5120
+#&gt; 10 Collins Plac… 2017-01-01 00:00:00 2017-01-01     0   444
+#&gt; # ... with 455,510 more rows, and 1 more variable:
+#&gt; #   Holiday &lt;lgl&gt;
+```
+
+]
+
+---
+
+.left-column[
+## Take a glimpse
+### - selected sensors
+]
+.right-column[
+* Flinders Street-Elizabeth Street (East)
+* Southern Cross Station
+* Victoria Market
+&lt;img src="figure/selected-sensor-1.svg" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+.left-column[
+## Take a glimpse
+### - selected sensors
+### - time series plot
+]
+.right-column[
+&lt;img src="figure/ts-plot-1.svg" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+.left-column[
+## Take a glimpse
+### - selected sensors
+### - time series plot
+### - faceted display
+]
+.right-column[
+&lt;img src="figure/facet-time-1.svg" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+background-image: url(img/calendar.png)
+background-size: cover
+
+---
+
+background-image: url(figure/sx-hol-1.svg)
+background-size: cover
+
+---
+
+class: inverse middle center
+
+&lt;img src="img/sugrrants.svg" height=200px size=50%&gt;
+
+## <i class="fa  fa-calendar "></i> calendar-based visualisation
+
+---
+
+.left-column[
+## Calendar-based vis
+### - construction
+]
+.right-column[
+&lt;center&gt;
+  &lt;img src="img/month.png" width = 500&gt;
+&lt;/center&gt;
+
+The grid position for any day in the month is given by
+
+`$$\begin{align}
+i &amp;= \lceil (g \mod 35) / 7\rceil \\ j &amp;= g \mod 7.
+\end{align}$$`
+
+Let `\(h\)` and `\(c\)` be the scaled hour and count, respectively, then the final
+coordinates are given by:
+
+`$$\begin{align}
+x &amp;= j + h \\ y &amp;= i - c.
+\end{align}$$`
+]
+
+---
+
+.left-column[
+## Calendar-based vis
+### - construction
+### - the args
+]
+.right-column[
+### The `frame_calendar()` function
+
+```r
+frame_calendar(
+  data, x, y, date, calendar = "monthly", dir = "h",
+  sunday = FALSE, nrow = NULL, ncol = NULL, polar = FALSE,
+  scale = "fixed", width = 0.95, height = 0.95
+)
+```
+* `x`, `y`: a unquoted (or bare) variable mapping to x and y axis.
+* `date`: a Date variable mapping to dates in the calendar.
+* `calendar`: type of calendar. "monthly", "weekly", "daily".
+* `sunday`: `FALSE` indicating to starting with Monday in a week, or `TRUE` for Sunday.
+* `nrow`, `ncol`: number of rows and columns defined for "monthly" calendar layout.
+* `scale`: "fixed", "free", "free_wday", and "free_mday".
+]
+
+---
+
+.left-column[
+## Calendar-based vis
+### - construction
+### - the args
+### - usage
+]
+.right-column[
+## Rearrange the data
+```r
+sx_cal &lt;- pedestrian %&gt;% 
+  filter(Sensor == "Southern Cross Station") %&gt;% 
+* frame_calendar(x = Time, y = Count, date = Date)
+```
+
+
+```
+#&gt; # A tibble: 8,760 x 5
+#&gt;     Time Count Date       .Time .Count
+#&gt;  * &lt;int&gt; &lt;int&gt; &lt;date&gt;     &lt;dbl&gt;  &lt;dbl&gt;
+#&gt;  1     0  1335 2017-01-01 0.258  0.986
+#&gt;  2     1   463 2017-01-01 0.260  0.972
+#&gt;  3     2   219 2017-01-01 0.261  0.968
+#&gt;  4     3   122 2017-01-01 0.263  0.967
+#&gt;  5     4    21 2017-01-01 0.264  0.965
+#&gt;  6     5    28 2017-01-01 0.266  0.965
+#&gt;  7     6    26 2017-01-01 0.268  0.965
+#&gt;  8     7    35 2017-01-01 0.269  0.965
+#&gt;  9     8    55 2017-01-01 0.271  0.966
+#&gt; 10     9    82 2017-01-01 0.272  0.966
+#&gt; # ... with 8,750 more rows
+```
+]
+
+---
+
+.left-column[
+## Calendar-based vis
+### - construction
+### - the args
+### - usage
+]
+.right-column[
+## Initialise the plot with `ggplot2`
+```r
+p1_sx &lt;- sx_cal %&gt;% 
+  ggplot(aes(x = .Time, y = .Count, group = Date)) +
+  geom_line()
+```
+&lt;img src="figure/sx-plot-1.svg" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+.left-column[
+## Calendar-based vis
+### - construction
+### - the args
+### - usage
+]
+.right-column[
+## Add reference lines and labels
+```r
+prettify(p1_sx)
+```
+&lt;img src="figure/sx-prettify-1.svg" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+.left-column[
+## Calendar-based vis
+### - construction
+### - the args
+### - usage
+]
+.right-column[
+## Colour mapping as usual 
+```r
+p2_sx &lt;- sx_cal %&gt;%
+  ggplot(aes(x = .Time, y = .Count, colour = Holiday, group = Date)) +
+  geom_line()
+prettify(p2_sx)
+```
+&lt;img src="figure/sx-hol-1.svg" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+.left-column[
+## Calendar-based vis
+### - construction
+### - the args
+### - usage
+]
+.right-column[
+## Naturally work with the `group_by()`
+```r
+facet_cal &lt;- subdat %&gt;% 
+  group_by(Sensor) %&gt;% 
+* frame_calendar(
+*   x = Time, y = Count, date = Date, nrow = 2
+* )
+
+p_facet &lt;- facet_cal %&gt;% 
+  ggplot(aes(x = .Time, y = .Count, group = Date)) +
+  geom_line(aes(colour = Sensor)) +
+  facet_grid(Sensor ~ .) +
+  scale_colour_brewer(palette = "Dark2")
+prettify(p_facet, label = NULL)
+```
+]
+
+---
+
+.left-column[
+## Calendar-based vis
+### - construction
+### - the args
+### - usage
+]
+.right-column[
+## Faceted calendar plots
+&lt;img src="figure/facet-1.svg" style="display: block; margin: auto;" /&gt;
+]
+
+---
+.left-column[
+## Special events
+### - adele's concert
+]
+.right-column[
+## Southern Cross Station
+&lt;img src="figure/sx-march-1.svg" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+.left-column[
+## Special events
+### - adele's concert
+]
+.right-column[
+![](img/adele.png)
+]
+
+---
+
+.left-column[
+## Special events
+### - adele's concert
+### - car attack
+]
+.right-column[
+## Flinders St-Elizabeth St
+&lt;img src="figure/dec-1.svg" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+.left-column[
+## Special events
+### - adele's concert
+### - car attack
+]
+.right-column[
+![](https://upload.wikimedia.org/wikipedia/commons/3/3c/Elizabeth_Street_tram_terminus%2C_Melbourne.jpg)
+[Wikipedia: December 21 2017 Melbourne car attack](https://en.wikipedia.org/wiki/December_2017_Melbourne_car_attack)
+.footnote[picture: &lt;a href="/wiki/User:Dysprosia~commonswiki" class="mw-redirect" title="User:Dysprosia~commonswiki"&gt;Dysprosia&lt;/a&gt; [&lt;a href="http://opensource.org/licenses/bsd-license.php"&gt;BSD&lt;/a&gt;], &lt;a href="https://commons.wikimedia.org/wiki/File%3AElizabeth_Street_tram_terminus%2C_Melbourne.jpg"&gt;via Wikimedia Commons&lt;/a&gt;]
+]
+
+---
+
+.left-column[
+## Showcases
+### - electricity consumption
+]
+.right-column[
+![elec](img/elec-consumption.png)
+.red[.footnote[Reference: **Roach, C** (forthcoming 2018). Assessing the impact of building characteristics on energy consumption using semiparametric mixed models.]]
+]
+
+---
+
+.left-column[
+## Showcases
+### - electricity consumption
+### - bus delays
+]
+.right-column[
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+![bus](img/bus-delay.jpg)
+.red[.footnote[Reference: [Tom Elliott's tweet](https://twitter.com/tomelliottnz/status/958887861943640064)]]
+]
+
+---
+
+.left-column[
+## Showcases
+### - electricity consumption
+### - bus delays
+### - web traffic
+]
+.right-column[
+&lt;br&gt;
+&lt;br&gt;
+![bus](img/web.png)
+.red[.footnote[Reference: [Rで解析：時系列データをカレンダー形式にプロット「sugrrants」パッケージ](https://www.karada-good.net/analyticsr/r-620)]]
+]
+
+---
+
+## <i class="fa  fa-list "></i> Summary
+
+
+* The full range of plotting capabilities in *ggplot2* is essentially available, from `geom_point()` to `geom_boxplot()`.
+* Other language supports are made for month and weekday labels, like CJK.
+* Patterns on special events for the region, like Anzac Day in Australia, or Thanksgiving Day in the USA, more easily pop out to the viewer as public holidays.
+* This sort of layout will be useful for studying consumer trends, or human behavior, such as pedestrian patterns or residential electricity demand.
+
+---
+
+class: inverse middle center
+
+### Slides: &lt;http://slides.earo.me/gwg18&gt;
+### Source code: &lt;https://github.com/earowang/gwg18&gt;
+### This work is under licensed [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/).
+    </textarea>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function() {
+  var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})();</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+  }
+});
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

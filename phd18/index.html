@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Tidy data structures and visualisation   to support exploration and modeling of temporal-context data</title>
+    <meta charset="utf-8">
+    <meta name="author" content="Earo Wang" />
+    <link href="index_files/remark-css/default.css" rel="stylesheet" />
+    <link href="index_files/font-awesome/css/font-awesome.min.css" rel="stylesheet" />
+    <script src="index_files/htmlwidgets/htmlwidgets.js"></script>
+    <script src="index_files/pymjs/pym.v1.js"></script>
+    <script src="index_files/widgetframe-binding/widgetframe.js"></script>
+    <link rel="stylesheet" href="myremark.css" type="text/css" />
+    <link rel="stylesheet" href="timeline.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Tidy data structures and visualisation <br> to support exploration and modeling of temporal-context data
+### Earo Wang
+### Mar 14, 2018 <br> slides at <a href="http://slides.earo.me/phd18" class="uri">http://slides.earo.me/phd18</a>
+
+---
+
+
+
+
+
+
+
+
+class: middle
+
+## Agenda
+
+* **WIP**: Tidy data structures to support exploration and modeling of temporal-context data (chapter 3)
+* **Done**: Calendar-based graphics for visualising people’s daily schedules (chapter 2)
+* **ToDo**: Visualisation of time series with nested and crossed factors (chapter 4)
+
+???
+
+* First, I'll spend most of the time talking about
+* Then, I'll briefly review my first-year work
+* Finally,
+
+---
+
+background-image: url(figure/map-airlines-1.svg)
+background-size: cover
+
+class: bottom center
+
+
+
+# USA airline traffic in 2016 &amp; 2017
+
+*data source: [US Bureau of Transportation Statistics](https://www.transtats.bts.gov/DL_SelectFields.asp?Table_ID=236)*
+
+???
+
+* as usual, the data comes first.
+* last year, I looked at the foot traffic
+* The first sight of this map is a bit overwhelming I suppose, but the main message is there are a few hubs and sporadic airports.
+
+---
+
+background-image: url(img/data-snapshot.png)
+background-size: cover
+
+class: inverse bottom center
+
+# Data snapshot
+
+???
+
+* This dataset is actually about the on-time performance for each flight at its scheduled departure time.
+* There are 11m obs.
+* It's not that big but bigish.
+
+---
+
+.pull-left[
+* heterogeneous data types
+* fine scale time resolution
+]
+.pull-right[
+* multiple measured variables
+* multiple grouping variables
+]
+.center[&lt;img src="img/data-snapshot.png" height=460px&gt;]
+
+???
+
+* as you can see, this dataset is quite rich with lots of information.
+* it features
+
+---
+
+## However ...
+
+--
+
+The current structure that underlies time series objects:
+
+`\begin{equation}
+  \begin{bmatrix}
+  X_{11} &amp; X_{21} &amp; \cdots &amp; X_{p1} \\
+  X_{12} &amp; X_{22} &amp; \cdots &amp; X_{p2} \\
+  \vdots &amp; \vdots &amp; \ddots &amp; \vdots \\
+  X_{1T} &amp; X_{2T} &amp; \cdots &amp; X_{pT}
+  \end{bmatrix}
+\end{equation}`
+
+where `\(X_{jt}\)` represents series `\(j\)`, for `\(j = 1, \dots, p\)` and `\(1 \leq t \leq T\)`, in the form of a `\(T \times p\)` matrix.
+
+--
+
+This matrix structure requires
+
+* homogeneity (numerical variables)
+* time indices implicitly inferred as attributes/meta-information
+
+It is **model-centric** rather than **data-centric**.
+
+???
+
+it's a bit frustrating to work with this kind of temporal data.
+
+---
+
+class: middle
+
+## The matrix structure
+
+.x[
+* discards interesting information in the data;
+* is implicit not explicit in handling of the temporal components;
+* fails to support transparent workflow.
+]
+
+???
+
+* if we actually put the data into the matrix container, we would throw away lots of interesting pieces.
+* more opaque in dealing with temporal components
+* and therefore it leads to non-transparent workflow 
+
+not transparent (leading to mistakes)
+
+---
+
+class: middle
+
+## Non-transparent workflow
+
+.pull-left[
+
+```r
+for (...) {
+  if (...) {
+    ...
+  } else {
+    ...
+  }
+  for (...) {
+  }
+}
+...
+for (...) {
+  if (...) {
+    ...
+  } else {
+    ...
+  }
+  for (...) {
+  }
+}
+```
+]
+
+--
+
+.pull-right[
+.shake[&lt;img src="img/duang.png" size=50%&gt;]
+&gt; Where I'm doing wrong?
+
+&gt; What I'm doing?
+]
+
+---
+
+class: middle
+
+## Instead, we'd like
+
+.checked[
+* heterogeneous data types to keep the richness of data
+* an explicitly declared index variable to be easily accessible
+* a syntactical approach to express nested or crossed factors
+* data pipelines to facilitate the workflow
+]
+
+???
+
+
+
+---
+
+class: inverse middle center
+
+.scale-up[&lt;img src="img/tsibble.svg" height=200px size=50%&gt;]
+
+## Chinglish for time series tibble
+
+---
+
+class: inverse middle center
+
+&lt;img src="img/tsibble.svg" height=200px size=50%&gt;
+
+## ~~Chinglish for time series tibble~~
+## The future of time series in R
+
+---
+
+.left-column[
+&lt;img src="img/tsibble.svg" height=120px&gt;
+### - definition
+]
+.right-column[
+.large[Tidy data principles.red[&lt;sup&gt;1&lt;/sup&gt;]:]
+* Each variable forms a column.
+* Each observation forms a row.
+* Each type of observational unit forms a table.
+&lt;!--
+.center[&lt;img src="img/tidy.png" height=130px&gt;]
+--&gt;
+]
+
+.footnote[
+.red[1.] Wickham, H (2014). Tidy data. Journal of Statistical Software 59(10), 1–23.
+]
+
+???
+
+There are three interrelate rules to make a dataset tidy.
+
+---
+
+.left-column[
+&lt;img src="img/tsibble.svg" height=120px&gt;
+### - definition
+]
+.right-column[
+.large[Tidy data principles.red[&lt;sup&gt;1&lt;/sup&gt;]:]
+* Each variable forms a column.
+* Each observation forms a row.
+* Each type of observational unit forms a table.
+
+.center[<i class="fa  fa-plus "></i>]
+
+.large[Tidy temporal data:]
+* **index**: an explicitly declared variable containing time indices.red[&lt;sup&gt;2&lt;/sup&gt;].
+* **key**: uniquely identifies each unit that measurements take place on over time.
+* **interval**: a common time interval if data with regular time interval.
+]
+
+.footnote[
+.red[1.] Wickham, H (2014). Tidy data. *Journal of Statistical Software* **59**(10), 1–23. &lt;br&gt;
+.red[2.] Grolemund, G. &amp; Wickham, H. (2011). Dates and times made easy with lubridate. *Journal of Statistical Software*, **40**(3), 1–25.
+]
+
+???
+
+* three additional info:
+* index forms the contextual base of the temporal data
+* key + index = primary key in the SQL database
+
+---
+
+.left-column[
+&lt;img src="img/tsibble.svg" height=120px&gt;
+### - definition
+]
+.right-column[
+
+
+
+
+
+```r
+flights %&gt;% 
+  as_tsibble(
+    key = id(flight), 
+    index = sched_dep_datetime, 
+    regular = FALSE
+  )
+```
+
+```
+*#&gt; # A tsibble: 11,076,746 x 27 [!]
+*#&gt; # Keys:      flight [24,647]
+#&gt;    flight sched_dep_datetime  dep_time sched_dep_time
+#&gt;    &lt;chr&gt;  &lt;dttm&gt;                 &lt;int&gt;          &lt;int&gt;
+#&gt;  1 AA1    2016-01-01 09:00:00      856            900
+#&gt;  2 AA1    2016-01-02 09:00:00      857            900
+#&gt;  3 AA1    2016-01-03 09:00:00      913            900
+#&gt;  4 AA1    2016-01-04 09:00:00      903            900
+#&gt;  5 AA1    2016-01-05 09:00:00      850            900
+#&gt;  6 AA1    2016-01-06 09:00:00      855            900
+#&gt; # ... with 11,076,740 more rows, and 23 more variables:
+#&gt; #   dep_delay &lt;dbl&gt;, arr_time &lt;int&gt;, sched_arr_time &lt;int&gt;,
+#&gt; #   arr_delay &lt;dbl&gt;, carrier &lt;chr&gt;, tailnum &lt;chr&gt;,
+#&gt; #   origin &lt;chr&gt;, dest &lt;chr&gt;, air_time &lt;dbl&gt;,
+#&gt; #   distance &lt;dbl&gt;, origin_city_name &lt;chr&gt;,
+#&gt; #   origin_state &lt;chr&gt;, origin_state_name &lt;chr&gt;,
+#&gt; #   dest_city_name &lt;chr&gt;, dest_state &lt;chr&gt;,
+#&gt; #   dest_state_name &lt;chr&gt;, taxi_out &lt;dbl&gt;, taxi_in &lt;dbl&gt;,
+#&gt; #   carrier_delay &lt;dbl&gt;, weather_delay &lt;dbl&gt;,
+#&gt; #   nas_delay &lt;dbl&gt;, security_delay &lt;dbl&gt;,
+#&gt; #   late_aircraft_delay &lt;dbl&gt;
+```
+]
+
+---
+
+.left-column[
+&lt;img src="img/tsibble.svg" height=120px&gt;
+### - definition
+### - index
+]
+.right-column[
+An explicitly declared variable (e.g. `sched_dep_datetime`) which could contain:
+* date-time: 
+
+```
+#&gt; [1] "2018-03-14 16:00:00 AEDT" "2018-03-14 16:15:00 AEDT"
+```
+* date:
+
+```
+#&gt; [1] "2018-03-13" "2018-03-14"
+```
+* year-month:
+
+```
+#&gt; [1] "2018 Jan" "2018 Feb"
+```
+* year-quarter:
+
+```
+#&gt; [1] "2018 Q1" "2018 Q2"
+```
+* year:
+
+```
+#&gt; [1] 2017 2018
+```
+* and etc.
+]
+
+???
+
+* the index variable is being declared explictly
+* extensible to trading days
+* why the explicit time indices turn out useful, the use case would be join the flight data with other tables, e.g. weather data based on the same timestamps.
+* impossible for implicit time index
+
+---
+
+.left-column[
+&lt;img src="img/tsibble.svg" height=120px&gt;
+### - definition
+### - index
+### - key
+]
+.right-column[
+Uniquely identifies each unit that measurements take place on over time:
+* single: 
+
+```r
+id(flight)
+```
+* nested:
+
+```r
+id(origin | origin_city | origin_state)
+```
+* crossed:
+
+```r
+id(origin, dest)
+```
+* nested &amp; crossed:
+
+```r
+id(origin | origin_state, dest | dest_state)
+```
+]
+
+???
+
+* The key could include a single or multiple columns
+* for example, sufficient to use flight to identify units
+* if the key consists of multiple vars, we need to consister they are nested or crossed.
+* e.g. a nesting structure in this case is the origin nested within the city | state. The ordering from lower to higher, using the vertical bar to describe the nesting
+
+---
+
+.left-column[
+&lt;img src="img/tsibble.svg" height=120px&gt;
+### - definition
+### - index
+### - key
+### - why tsibble?
+]
+.right-column[
+.center[.large[I. flexible]]
+
+&lt;br&gt;
+&lt;br&gt;
+.center[&lt;img src="img/melt.png"&gt;]
+]
+
+???
+
+* why tsibble is useful?
+* we are unable to recover this original dataset from this matrix, as it's a case of simplicity and doesn't accommodate actual datasets with rich info
+
+---
+
+.left-column[
+&lt;img src="img/tsibble.svg" height=120px&gt;
+### - definition
+### - index
+### - key
+### - why tsibble?
+]
+.right-column[
+.center[.large[II. mapping from data semantics to its physical layout]]
+
+.center[&lt;img src="img/semantics.png"&gt;]
+]
+
+???
+
+* variables are in columns, observations are in rows, and values are in cells.
+* Every value belongs to a variable and an observation
+* A variable contains all values that measure the same underlying attribute across units over time. 
+* An observation contains all values measured on the same unit at a time point across attributes.
+
+---
+
+.left-column[
+&lt;img src="img/tsibble.svg" height=120px&gt;
+### - definition
+### - index
+### - key
+### - why tsibble?
+]
+.right-column[
+.center[.large[III. WYTIWYC]]
+
+1️⃣ select variables `flight`, `sched_dep_datetime`, `dep_delay`
+
+
+```r
+flights_sel &lt;- flights %&gt;% 
+  select(flight, sched_dep_datetime, dep_delay)
+flights_sel
+```
+
+```
+#&gt; # A tsibble: 11,076,746 x 3 [!]
+#&gt; # Keys:      flight [24,647]
+#&gt;   flight sched_dep_datetime  dep_delay
+#&gt;   &lt;chr&gt;  &lt;dttm&gt;                  &lt;dbl&gt;
+#&gt; 1 AA1    2016-01-01 09:00:00       -4.
+#&gt; 2 AA1    2016-01-02 09:00:00       -3.
+#&gt; 3 AA1    2016-01-03 09:00:00       13.
+#&gt; 4 AA1    2016-01-04 09:00:00        3.
+#&gt; 5 AA1    2016-01-05 09:00:00      -10.
+#&gt; 6 AA1    2016-01-06 09:00:00       -5.
+#&gt; # ... with 1.108e+07 more rows
+```
+
+.center[&lt;img src="img/select.png" height=150&gt;]
+]
+
+???
+
+this mapping property takes us to what you think is what you code
+
+* operating on the columns
+
+---
+
+.left-column[
+&lt;img src="img/tsibble.svg" height=120px&gt;
+### - definition
+### - index
+### - key
+### - why tsibble?
+]
+.right-column[
+.center[.large[III. WYTIWYC]]
+
+2️⃣ filter observations for 2017
+
+
+```r
+flights_fil &lt;- flights_sel %&gt;% 
+  filter(year(sched_dep_datetime) == 2017)
+flights_fil
+```
+
+```
+#&gt; # A tsibble: 5,560,846 x 3 [!]
+#&gt; # Keys:      flight [22,563]
+#&gt;   flight sched_dep_datetime  dep_delay
+#&gt;   &lt;chr&gt;  &lt;dttm&gt;                  &lt;dbl&gt;
+#&gt; 1 AA1    2017-01-01 08:00:00       31.
+#&gt; 2 AA1    2017-01-02 08:00:00       -3.
+#&gt; 3 AA1    2017-01-03 08:00:00       -6.
+#&gt; 4 AA1    2017-01-04 08:00:00       -3.
+#&gt; 5 AA1    2017-01-05 08:00:00       -7.
+#&gt; 6 AA1    2017-01-06 08:00:00       -3.
+#&gt; # ... with 5.561e+06 more rows
+```
+
+.center[&lt;img src="img/filter.png" height=150&gt;]
+]
+
+???
+
+* perform the operations on the rows
+
+---
+
+.left-column[
+&lt;img src="img/tsibble.svg" height=120px&gt;
+### - definition
+### - index
+### - key
+### - why tsibble?
+]
+.right-column[
+.center[.large[III. WYTIWYC]]
+
+3️⃣ aggregate to monthly averages
+
+
+```r
+flights_tsum &lt;- flights_fil %&gt;% 
+  tsummarise(
+    yrmth = yearmonth(sched_dep_datetime),
+    avg_delay = mean(dep_delay)
+  )
+flights_tsum
+```
+
+```
+#&gt; # A tsibble: 12 x 2 [1MONTH]
+#&gt;       yrmth avg_delay
+#&gt;       &lt;mth&gt;     &lt;dbl&gt;
+#&gt;  1 2017 Jan     12.1 
+#&gt;  2 2017 Feb      7.10
+#&gt;  3 2017 Mar      9.28
+#&gt;  4 2017 Apr     12.1 
+#&gt;  5 2017 May     10.8 
+#&gt;  6 2017 Jun     13.6 
+#&gt;  7 2017 Jul     13.1 
+#&gt;  8 2017 Aug     11.1 
+#&gt;  9 2017 Sep      5.25
+#&gt; 10 2017 Oct      6.64
+#&gt; 11 2017 Nov      4.26
+#&gt; 12 2017 Dec      9.89
+```
+
+]
+
+???
+
+* You can see this process is very intuitive. You have a well-organised dataset and you think the verb to work on either variables or observations and you have the code already.
+
+---
+
+.left-column[
+&lt;img src="img/tsibble.svg" height=120px&gt;
+### - definition
+### - index
+### - key
+### - why tsibble?
+]
+.right-column[
+.center[.large[IV. verbs]]
+
+A consistent set of verbs to solve a wide range of temporal data transformation problems:
+
+* row-wise: `filter()`, `slice()`, `arrange()`, `fill_na()`
+* column-wise: `mutate()`, `select()`, `summarise()`, `tsummarise()`
+
+These all naturally work with `group_by()`.
+
+* join two tables: `left_join()`, `right_join()`, `inner_join()`, `full_join()`, `semi_join()`, `anti_join()`
+* rolling window: `slide()`, `tile()`, `stretch()`
+]
+
+---
+
+class: inverse middle center
+
+## Data pipelines
+### break up a big problem into smaller pieces
+
+.footnote[
+.red[*] Buja, A., Asimov, D., Hurley G., &amp; McDonald J. (1988) Elements of a viewing piepline for data analysis. &lt;br&gt;
+.red[*] Wickham, H., Lawrence, M., Cook, D. et al. (2009) The plumbing of interactive graphics. *Computational Statistics* **(24)**207
+]
+
+???
+
+The tidy time series structure also supports thinking of operations on the data as part of a data pipeline
+
+---
+
+## Question
+
+Do time of the day and day of the week affect the on-time performance in 2017?
+
+--
+
+&lt;img src="figure/delayed-facet-1.svg" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Pipeline I
+
+.block[
+.flowchart[
+* `filter()` &lt;br&gt; subset time window
+]
+]
+
+
+```r
+n_flights &lt;- flights %&gt;% 
+* filter(year(sched_dep_datetime) == 2017) %&gt;% 
+  mutate(dep_delay_break = case_when(
+    dep_delay &lt;= 15 ~ "ontime",
+    dep_delay &lt;= 60 ~ "15-60 mins",
+    TRUE ~ "60+ mins"
+  )) %&gt;% 
+  group_by(dep_delay_break) %&gt;% 
+  tsummarise(
+    floor_date(sched_dep_datetime, unit = "hour"), 
+    n_flight = n()
+  ) %&gt;% 
+  mutate(
+    hour = hour(sched_dep_datetime),
+    date = as_date(sched_dep_datetime),
+    wday = wday(sched_dep_datetime, label = TRUE, week_start = 1)
+  )
+```
+
+---
+
+## Pipeline I
+
+.block[
+.flowchart[
+* `filter()` &lt;br&gt; subset time window
+* `mutate()` &lt;br&gt; create a new variable
+]
+]
+
+
+```r
+n_flights &lt;- flights %&gt;% 
+  filter(year(sched_dep_datetime) == 2017) %&gt;% 
+* mutate(dep_delay_break = case_when(
+*   dep_delay &lt;= 15 ~ "ontime",
+*   dep_delay &lt;= 60 ~ "15-60 mins",
+*   TRUE ~ "60+ mins"
+* )) %&gt;% 
+  group_by(dep_delay_break) %&gt;% 
+  tsummarise(
+    floor_date(sched_dep_datetime, unit = "hour"), 
+    n_flight = n()
+  ) %&gt;% 
+  mutate(
+    hour = hour(sched_dep_datetime),
+    date = as_date(sched_dep_datetime),
+    wday = wday(sched_dep_datetime, label = TRUE, week_start = 1)
+  )
+```
+
+---
+
+## Pipeline I
+
+.block[
+.flowchart[
+* `filter()` &lt;br&gt; subset time window
+* `mutate()` &lt;br&gt; create a new variable
+* `tsummarise()` &lt;br&gt; aggregate to hourly intervals
+]
+]
+
+
+```r
+n_flights &lt;- flights %&gt;% 
+  filter(year(sched_dep_datetime) == 2017) %&gt;% 
+  mutate(dep_delay_break = case_when(
+    dep_delay &lt;= 15 ~ "ontime",
+    dep_delay &lt;= 60 ~ "15-60 mins",
+    TRUE ~ "60+ mins"
+  )) %&gt;% 
+* group_by(dep_delay_break) %&gt;% 
+* tsummarise(
+*   floor_date(sched_dep_datetime, unit = "hour"), 
+*   n_flight = n()
+* ) %&gt;% 
+  mutate(
+    hour = hour(sched_dep_datetime),
+    date = as_date(sched_dep_datetime),
+    wday = wday(sched_dep_datetime, label = TRUE, week_start = 1)
+  )
+```
+
+---
+
+## Pipeline I
+
+.block[
+.flowchart[
+* `filter()` &lt;br&gt; subset time window
+* `mutate()` &lt;br&gt; create a new variable
+* `tsummarise()` &lt;br&gt; aggregate to hourly intervals
+* `mutate()` &lt;br&gt; augment time units
+]
+]
+
+
+```r
+n_flights &lt;- flights %&gt;% 
+  filter(year(sched_dep_datetime) == 2017) %&gt;% 
+  mutate(dep_delay_break = case_when(
+    dep_delay &lt;= 15 ~ "ontime",
+    dep_delay &lt;= 60 ~ "15-60 mins",
+    TRUE ~ "60+ mins"
+  )) %&gt;% 
+  group_by(dep_delay_break) %&gt;% 
+  tsummarise(
+    floor_date(sched_dep_datetime, unit = "hour"), 
+    n_flight = n()
+  ) %&gt;% 
+* mutate(
+*   hour = hour(sched_dep_datetime),
+*   date = as_date(sched_dep_datetime),
+*   wday = wday(sched_dep_datetime, label = TRUE, week_start = 1)
+* )
+```
+
+---
+
+
+```r
+n_flights &lt;- flights %&gt;% 
+  filter(year(sched_dep_datetime) == 2017) %&gt;% 
+  mutate(dep_delay_break = case_when(
+    dep_delay &lt;= 15 ~ "ontime",
+    dep_delay &lt;= 60 ~ "15-60 mins",
+    TRUE ~ "60+ mins"
+  )) %&gt;% 
+  group_by(dep_delay_break) %&gt;% 
+  tsummarise(
+    floor_date(sched_dep_datetime, unit = "hour"), 
+    n_flight = n()
+  ) %&gt;% 
+  mutate(
+    hour = hour(sched_dep_datetime),
+    date = as_date(sched_dep_datetime),
+    wday = wday(sched_dep_datetime, label = TRUE, week_start = 1)
+  )
+n_flights
+```
+
+```
+*#&gt; # A tsibble: 22,855 x 6 [1HOUR]
+*#&gt; # Keys:      dep_delay_break [3]
+#&gt;   dep_delay_break sched_dep_datetime  n_flight  hour date       wday 
+#&gt;   &lt;chr&gt;           &lt;dttm&gt;                 &lt;int&gt; &lt;int&gt; &lt;date&gt;     &lt;ord&gt;
+#&gt; 1 15-60 mins      2017-01-01 00:00:00        3     0 2017-01-01 Sun  
+#&gt; 2 15-60 mins      2017-01-01 01:00:00        1     1 2017-01-01 Sun  
+#&gt; 3 15-60 mins      2017-01-01 02:00:00        2     2 2017-01-01 Sun  
+#&gt; 4 15-60 mins      2017-01-01 05:00:00       14     5 2017-01-01 Sun  
+#&gt; 5 15-60 mins      2017-01-01 06:00:00       49     6 2017-01-01 Sun  
+#&gt; 6 15-60 mins      2017-01-01 07:00:00       68     7 2017-01-01 Sun  
+#&gt; # ... with 2.285e+04 more rows
+```
+---
+
+## Pipe into the grammar of graphics
+
+
+```r
+ggplot(n_flights) +
+  geom_line(aes(x = hour, y = n_flight, group = date), alpha = 0.25) +
+  geom_line(
+    aes(x = hour, y = avg_n_flight, colour = dep_delay_break), 
+    data = avg_n_flights,
+  ) +
+  facet_grid(dep_delay_break ~ wday, scales = "free_y")
+```
+
+.center[&lt;img src="figure/delayed-facet-1.svg" height=380px&gt;]
+
+---
+
+background-image: url(img/calendar.png)
+background-size: cover
+
+class: inverse center bottom
+
+# Pipeline II: calendar-based visualisation &lt;img src="img/sugrrants.svg" height=120px size=50%&gt;
+
+???
+
+It is quite often to have sub-daily data, but there's no graphic tool for 
+
+---
+
+## Pipeline II: quantiles of departure delay into a calendar layout
+
+.block[
+.flowchart[
+* `filter()` &lt;br&gt; subset time window
+* `tsummarise()` &lt;br&gt; aggregate to hourly intervals
+* `mutate()` &lt;br&gt; augment time units
+* `frame_calendar()` &lt;br&gt; re-structure into a calendar layout
+]
+]
+
+
+```r
+delay_qtl &lt;- flights %&gt;% 
+  filter(
+    year(sched_dep_datetime) == 2017, 
+    hour(sched_dep_datetime) &gt; 4
+  ) %&gt;% 
+  tsummarise(
+    floor_date(sched_dep_datetime, unit = "hour"), 
+    qtl50 = quantile(dep_delay, 0.5),
+    qtl80 = quantile(dep_delay, 0.8),
+    qtl95 = quantile(dep_delay, 0.95)
+  ) %&gt;% 
+  mutate(
+    zero = 0,
+    hour = hour(sched_dep_datetime), 
+    date = as_date(sched_dep_datetime)
+  ) %&gt;% 
+* frame_calendar(
+*   x = hour, y = vars(qtl95, qtl80, qtl50, zero), date = date,
+* )
+```
+
+&lt;!--
+```
+#&gt; # A tsibble: 6,935 x 7 [1HOUR]
+#&gt;   sched_dep_datetime  qtl50 qtl80 qtl95  zero  hour date      
+#&gt;   &lt;dttm&gt;              &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;int&gt; &lt;date&gt;    
+#&gt; 1 2017-01-01 05:00:00   -2.  3.00  29.1    0.     5 2017-01-01
+#&gt; 2 2017-01-01 06:00:00   -3.  2.80  39.7    0.     6 2017-01-01
+#&gt; 3 2017-01-01 07:00:00   -3.  5.00  51.0    0.     7 2017-01-01
+#&gt; 4 2017-01-01 08:00:00   -2.  5.00  46.0    0.     8 2017-01-01
+#&gt; 5 2017-01-01 09:00:00   -2.  8.00  57.6    0.     9 2017-01-01
+#&gt; 6 2017-01-01 10:00:00   -2. 10.0   75.4    0.    10 2017-01-01
+#&gt; # ... with 6,929 more rows
+```
+--&gt;
+
+---
+
+&lt;img src="figure/delay-qtl-cal-1.svg" style="display: block; margin: auto;" /&gt;
+---
+
+class: center
+
+<div id="htmlwidget-b8b18cc4ad7186292fdd" style="width:100%;height:700px;" class="widgetframe html-widget"></div>
+<script type="application/json" data-for="htmlwidget-b8b18cc4ad7186292fdd">{"x":{"url":"figure//widgets/widget_plotly-cal.html","options":{"xdomain":"*","allowfullscreen":false,"lazyload":false}},"evals":[],"jsHooks":[]}</script>
+
+---
+
+## Pipeline II: calendarise the data
+
+.center[&lt;img src="img/month.png" width = 380&gt;]
+
+The grid position for any day in the month is given by
+
+`$$\begin{align}
+i &amp;= \lceil (g \mod 35) / 7\rceil \\ j &amp;= g \mod 7.
+\end{align}$$`
+
+Let `\(h\)` and `\(q\)` be the scaled hour and quantiles, respectively, then the final
+coordinates are given by:
+
+`$$\begin{align}
+x &amp;= j + h \\ y &amp;= i - q.
+\end{align}$$`
+
+---
+
+class: inverse middle center
+
+# Wrap-up
+
+---
+
+## Data science pipeline
+
+&lt;br&gt;
+&lt;br&gt;
+&lt;img src="img/data-science.png"&gt;
+
+.footnote[adapted from [r4ds](http://r4ds.had.co.nz/explore-intro.html)]
+
+---
+
+.top[&lt;img src="img/tsibble.svg" height=80px&gt;]
+
+## Tidy temporal data
+
+* Rectangular form: heterogeneous data types, multiple measured and grouping variables, implict missing values, and etc.
+* An explicitly declared index variable and a set of keys
+* A mapping bridging the semantics of a dataset to its physical representation
+* A data pipeline that supports thinking of operations on the data variables and observations
+
+.center[&lt;img src="img/semantics.png" height=280&gt;]
+
+---
+
+.top[&lt;img src="img/sugrrants.svg" height=80px&gt;]
+
+## Calendar-based visualisation
+
+* Easily integrated as part of data pipelines
+* Synchronise neatly with grammar of graphics
+* Patterns on special events more easily pop out to the viewer
+* Useful for studying sub-daily time series related to human behaviours
+
+.center[&lt;img src="figure/delay-qtl-cal-1.svg" height=380&gt;]
+
+---
+
+class: inverse middle center
+
+## Visualisation of time series with nested and crossed factors
+
+### student enrolment data: e.g. dept | faculty, campus
+### previous modeling work
+
+???
+
+
+---
+
+.left-column[
+## Timeline
+### - Done
+]
+.right-column[
+.timeline.timeline-left.timeline-with-arrows[
+.timeline-block[
+.arrow-right[
+.timeline-content[
+[**Tidy data and statistical visualisation to support exploration of temporal data with R**](http://slides.earo.me/medascin17/) &lt;br&gt;
+Workshop @ Data Science Week, Melbourne
+.timeline-date[
+2017/05
+]]]]
+.timeline-block[
+.arrow-right[
+.timeline-content[
+[**Sketch people’s daily schedules**](http://slides.earo.me/wombat17/) &lt;br&gt;
+Lightning @ Wombat, Melbourne
+.timeline-date[
+2017/05
+]]]]
+
+.timeline-block[
+.arrow-right[
+.timeline-content[
+sugrrants v0.1.0 CRAN release
+.timeline-date[
+2017/07
+]]]]
+
+.timeline-block[
+.arrow-right[
+.timeline-content[
+[**Calendar-based graphics for visualizing people’s daily schedules**](http://pub.earo.me/calendar-vis.pdf) submitted to JSS
+.timeline-date[
+2017/08
+]]]]
+
+.timeline-block[
+.arrow-right[
+.timeline-content[
+[**Analysing sub-daily time series data**](http://slides.earo.me/meetup17/) &lt;br&gt;
+Invited talk @ MelbURN, Melbourne
+.timeline-date[
+2017/10
+]]]]
+]
+]
+
+---
+
+.left-column[
+## Timeline
+### - Done
+]
+.right-column[
+.timeline.timeline-left.timeline-with-arrows[
+.timeline-block[
+.arrow-right[
+.timeline-content[
+[**Calendar-based graphics for visualizing people’s daily schedules**](http://slides.earo.me/iasc17/) &lt;br&gt;
+Contributed talk @ IASC, Auckland
+.timeline-date[
+2017/12
+]]]]
+
+.timeline-block[
+.arrow-right[
+.timeline-content[
+tsibble v0.1.0 CRAN release
+.timeline-date[
+2018/01
+]]]]
+.timeline-block[
+.arrow-right[
+.timeline-content[
+**Calendar-based graphics for visualizing people’s daily schedules**
+won the 2018 ASA Statistical Graphics Student Paper Award 🏆
+.timeline-date[
+2018/01
+]]]]
+
+.timeline-block[
+.arrow-right[
+.timeline-content[
+[**When time series meets tibble, it’s tsibble!**](http://slides.earo.me/rstudioconf18/tsibble.pdf)
+Poster @ rstudio::conf, San Diego
+.timeline-date[
+2018/01
+]]]]
+]
+]
+
+---
+
+.left-column[
+## Timeline
+### - Done
+### - ToDo
+]
+.right-column[
+.timeline.timeline-left.purple-flirt.timeline-with-arrows[
+.timeline-block[
+.arrow-right[
+.timeline-content[
+Academic visit @ Paris &amp; Brussels
+.timeline-date[
+2018/04
+]]]]
+.timeline-block[
+.arrow-right[
+.timeline-content[
+**Tidy data structures to support exploration and modeling of temporal-context data**
+submitted to JCGS
+.timeline-date[
+2018/07
+]]]]
+
+.timeline-block[
+.arrow-right[
+.timeline-content[
+**Tidy data structures to support exploration and modeling of temporal-context data** &lt;br&gt;
+Contributed talk @ UseR!2018, Brisbane
+.timeline-date[
+2018/07
+]]]]
+
+.timeline-block[
+.arrow-right[
+.timeline-content[
+**Calendar-based graphics for visualizing people’s daily schedules** &lt;br&gt;
+Contributed talk @ JSM, Vancouver
+.timeline-date[
+2018/08
+]]]]
+]
+]
+
+---
+
+
+.left-column[
+## Timeline
+### - Done
+### - ToDo
+]
+.right-column[
+.timeline.timeline-left.purple-flirt.timeline-with-arrows[
+.timeline-block[
+.arrow-right[
+.timeline-content[
+**Tidy data structures to support exploration and modeling of temporal-context data** &lt;br&gt;
+Contributed talk @ ISCB, Melbourne
+.timeline-date[
+2018/08
+]]]]
+
+.timeline-block[
+.arrow-right[
+.timeline-content[
+**Visualisation of time series with nested and crossed factors**
+.timeline-date[
+2019/03
+]]]]
+
+.timeline-block[
+.arrow-right[
+.timeline-content[
+Thesis ✌️
+.timeline-date[
+2019/06
+]]]]
+]
+]
+
+---
+
+class: inverse middle center
+
+## Joint work with Di &amp; Rob
+
+&lt;img src="img/super.jpg" height=420px size=50%&gt;
+
+---
+
+class: inverse middle center
+
+### Made with [<i class="fa  fa-heart "></i>]() and .orange[<i class="fa  fa-coffee "></i>]
+
+--
+
+### Slides created via xaringan ⚔️ &lt;http://slides.earo.me/phd18&gt;
+
+--
+### Reproducible &amp; open source &lt;https://github.com/earowang/phd18&gt;
+
+--
+### This work is under licensed [<i class="fa  fa-creative-commons "></i> BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/).
+
+--
+
+### Thank you!
+
+--
+
+### .
+
+--
+
+### .
+
+--
+
+### .
+
+--
+
+### THE END
+    </textarea>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function() {
+  var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})();</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+  }
+});
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

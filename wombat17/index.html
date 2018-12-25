@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Sketch people’s daily schedules</title>
+    <meta charset="utf-8">
+    <meta name="author" content="Earo Wang" />
+    <link href="index_files/remark-css/example.css" rel="stylesheet" />
+    <link rel="stylesheet" href="myremark.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Sketch people’s daily schedules
+### Earo Wang
+### Slides on <a href="http://bit.ly/wombat17-sketch" class="uri">http://bit.ly/wombat17-sketch</a>
+
+---
+
+
+class: bottom center
+background-image: url(img/sx.jpg)
+background-size: cover
+
+
+
+
+
+
+
+
+
+# .orange[What is foot traffic like around here on a weekday?]
+
+???
+
+* more than 300 ppl coming to the conference
+* There would be more foot traffic in this area than a normal friday due to this special event.
+* Have you ever wondered ...
+
+---
+
+class: middle center
+
+# Let's turn back time to &lt;br&gt; 10th of Jan, 2011
+
+&lt;i class="fa fa-clock-o fa-5x" aria-hidden="true"&gt;&lt;/i&gt;
+
+???
+
+* 6 years ago
+* which is a monday
+* How many ped were there?
+
+---
+
+class: middle center
+
+&lt;img src="figure/sx4-1.svg" style="display: block; margin: auto;" /&gt;
+
+## nobody
+
+???
+
+
+---
+
+class: middle center
+
+&lt;img src="figure/sx5-1.svg" style="display: block; margin: auto;" /&gt;
+
+## very early birds
+
+???
+
+Some very early birds showing up
+
+---
+
+class: middle center
+
+&lt;img src="figure/sx6-1.svg" style="display: block; margin: auto;" /&gt;
+
+## early birds
+
+---
+
+class: middle center
+
+&lt;img src="figure/sx7-1.svg" style="display: block; margin: auto;" /&gt;
+
+## commuters to work
+
+---
+
+class: middle center
+
+&lt;img src="figure/sx8-1.svg" style="display: block; margin: auto;" /&gt;
+
+## commuters to work
+
+???
+
+this commenting traffic reaches to its peak
+
+---
+
+class: middle center
+
+&lt;img src="figure/sx9-1.svg" style="display: block; margin: auto;" /&gt;
+
+## in the office
+
+---
+
+class: middle center
+
+&lt;img src="figure/sx10-1.svg" style="display: block; margin: auto;" /&gt;
+
+## in the office
+
+---
+
+class: middle center
+
+&lt;img src="figure/sx11-1.svg" style="display: block; margin: auto;" /&gt;
+
+## in the office
+
+---
+
+class: middle center
+
+&lt;img src="figure/sx12-1.svg" style="display: block; margin: auto;" /&gt;
+
+## lunch time
+
+---
+
+class: middle center
+
+&lt;img src="figure/sx13-1.svg" style="display: block; margin: auto;" /&gt;
+
+## lunch time
+
+---
+
+class: middle center
+
+&lt;img src="figure/sx14-1.svg" style="display: block; margin: auto;" /&gt;
+
+## in the office
+
+---
+
+class: middle center
+
+&lt;img src="figure/sx15-1.svg" style="display: block; margin: auto;" /&gt;
+
+## in the office
+
+---
+
+class: middle center
+
+&lt;img src="figure/sx16-1.svg" style="display: block; margin: auto;" /&gt;
+
+## commuters home
+
+---
+
+class: middle center
+
+&lt;img src="figure/sx17-1.svg" style="display: block; margin: auto;" /&gt;
+
+## commuters home
+
+---
+
+class: middle center
+
+&lt;img src="figure/sx18-1.svg" style="display: block; margin: auto;" /&gt;
+
+## commuters home
+
+---
+
+class: middle center
+
+&lt;img src="figure/sx19-1.svg" style="display: block; margin: auto;" /&gt;
+
+## nobody
+
+---
+
+class: middle center
+
+&lt;img src="figure/sx-week-1.svg" style="display: block; margin: auto;" /&gt;
+
+## a week later
+
+---
+
+class: middle center
+
+&lt;img src="figure/sx-month-1.svg" style="display: block; margin: auto;" /&gt;
+
+## a month later
+
+???
+
+* a month later, there's another calender effect popping in, which is Aus day.
+* You can see how the public holiday affect our daily schedules
+
+---
+
+class: middle center
+
+&lt;img src="figure/sx-year-1.svg" style="display: block; margin: auto;" /&gt;
+
+## a year later
+
+???
+
+what it look time in a year time.
+
+---
+
+class: middle center
+
+&lt;img src="figure/sx-6years-1.png" style="display: block; margin: auto;" /&gt;
+
+## ... until today, oops.
+
+???
+
+after 6 years, oops.
+
+big data, little info.
+
+well we can still read upward trend over time.
+
+---
+
+## Can we ...
+
+--
+
+* display calendar-related activities: time of day, day of week, day of year, and etc simultaneously?
+
+
+--
+
+* visualise such looooong historical temporal data on a limited screen space?
+
+
+--
+
+* look up the date when there's interesting pattern going on without interactivity?
+
+
+--
+
+## YES, WE CAN.
+
+???
+
+It addresses some questions we have
+
+---
+
+background-image: url(img/calendar.png)
+background-size: cover
+
+???
+
+* Our solution to these questions is to use calendar plot.
+* This calendar format should be familiar to you. Bc it appears everywhere, on
+  your wall, on the desk or on your elec dev
+* Here I show you the foot traffic in Feb. Clearly see the time of day, day of effect
+  no particular events.
+
+---
+
+background-image:url(img/sx-2016-1-adjust.png)
+background-size: 100%
+
+???
+
+* This is only one month data. Now I just increase the time span to 16 months.
+* You may soon notice there's very high traffic in the evening on one weekend in March.
+* What happened to that weekend.
+* Well, Adele gave a live concert at Etihad Stadium.
+* How popular Adele is 
+
+---
+
+background-image:url(img/sx-calendar-1-adjust.png)
+background-size: 100%
+
+???
+
+* It's time to try this calendar display on the whole dataset, 6 years and 4 months data
+* Can you imagine there are 54,000 data points you're staring at right now.
+* It just shows the potential that the calendar plot handle such large amount of data and present so much info in a clear manner.
+
+---
+
+background-image: url(img/elec.jpg)
+background-size: cover
+
+# .orange[How about residential electricity demand in Victoria?]
+
+???
+
+* One data example may not be convincing.
+* lemme just add the second one
+
+---
+
+class: middle center
+
+&lt;img src="figure/elec-line-1.png" style="display: block; margin: auto;" /&gt;
+
+## 2010-2014 half hourly residential electricity demand
+
+???
+
+* This plot shows from 2010-2014 5 year half hourly residential ...
+* A downward trend
+* High demand in Jan and winter time, no more than that
+
+---
+
+background-image:url(img/elec-cal-1-adjust.png)
+background-size: 100%
+
+???
+
+* Lemme just switch to the calendar display. Different story. During the summer time,
+particularly in Jan, one peak in the late afternoon due to the air conditioning use.
+As the temp goes up, the elec use goes up. By contrast, experienced two peaks in
+the Winter, one in the morning and the other on in the night for the heater use.
+* Weekday and weekend
+
+---
+
+class: middle center
+
+# The 3rd or more examples are there for you to add and explore. 
+
+&lt;i class="fa fa-calendar fa-5x" aria-hidden="true"&gt;&lt;/i&gt;
+
+### hint: [*sugrrants*](https://github.com/earowang/sugrrants) does this calendar magic for you.
+
+---
+
+background-image: url(img/question.jpg)
+background-size: cover
+    </textarea>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('showSlide', function (slide) {setTimeout(function() {window.dispatchEvent(new Event('resize'));}, 100)});</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+  }
+});
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

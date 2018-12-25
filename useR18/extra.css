@@ -1,0 +1,14 @@
+/* animation */
+.scale-up {
+  animation: scaleUp 3s;
+}
+
+@keyframes scaleUp {
+  from {
+    opacity: 0;
+    font-size: 0.1em;
+  }
+  to {
+    opacity: 1;
+  }
+}
