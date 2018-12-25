@@ -26,7 +26,8 @@ get_stage("deploy") %>%
       done <- strsplit(whisker::whisker.render(template), "\n")[[1]]
       write_utf8("README.md", done)
     }
-  )
+  ) %>% 
+  add_step(step_push_deploy())
 
 if (Sys.getenv("id_rsa") != "") {
   # pkgdown documentation can be built optionally. Other example criteria:
@@ -38,5 +39,5 @@ if (Sys.getenv("id_rsa") != "") {
     add_step(step_setup_ssh())
 
   get_stage("deploy") %>%
-    add_step(step_push_deploy(branch = "master"))
+    add_step(step_push_deploy())
 }
