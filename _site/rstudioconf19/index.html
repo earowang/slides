@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Melt the clck</title>
+    <meta charset="utf-8">
+    <meta name="author" content="  Earo Wang     @earowang" />
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link rel="stylesheet" href="libs/remark.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Melt the cl<i class='far fa-clock' style='font-size:52px'></i>ck
+## tidy time series analysis
+<hr>
+### <br> Earo Wang <br> <i class='fab fa-twitter' style='color:#6CADDE'></i> <i class='fab fa-github'></i> <span class="citation">@earowang</span>
+### slides at <a href="https://slides.earo.me/rstudioconf19">slides.earo.me/rstudioconf19</a>
+
+---
+
+class: middle
+
+
+
+
+
+.center[
+### 1 tidy unified time series workflow ‼️
+]
+&lt;br&gt;
+
+.pull-left[
+### 2 packages 📦
+.center[
+&lt;img src="img/tsibble.png" height=180px&gt;
+&lt;img src="img/fable.png" height=180px&gt;
+]
+]
+.pull-right[
+### 3 big ideas 💡
+1. tsibble
+2. mable
+3. fable
+]
+
+???
+
+I want to talk about one streamlined workflow for ts under the tidyverse framework,
+using 2 packages. I'll introduce you three big ideas behind these 2 pkgs: they are
+tsibble, mable and fable and how they link together. I hope to explain them 
+concretely with data examples.
+
+---
+
+## Tidy data workflow
+
+.center[
+![](img/r4ds.svg)
+]
+
+The underlying data structure: [tibble]()
+
+???
+
+I believe this diagram isn't foreign to you. This is the tidyverse model.
+Each module here is powered by one of the tidyverse packages. The tidyverse 
+plays nicely with each other. And one of the fundamental reasons is 
+they all share the same underlying data structure, which is data frame or tibble. 
+So the diagram actually places the data in the center.
+
+But why we cannot bring this workflow easily into time series?
+
+---
+
+## Current time series workflow
+
+.center[
+![](img/r4ts.svg)
+]
+&lt;hr&gt;
+.center[
+![](img/adhoc.svg)
+]
+
+???
+
+Because the current time series objects in R are model-focused. By saying model,
+I mean it not only includes statistical models, but also forecasting,
+decomposition, autocorrelation function, and etc. All the methods expect matrices
+as inputs. But 
+the data arrives in the right beginning of this process, it rarely comes in the
+matrix form. We have to write so much ad hoc code get the data into a model-ready 
+time series object. It is a pain, bc of the mismatch
+
+We hope to change that.
+
+---
+
+## Tidy time series workflow 😃
+
+.center[
+![](img/r4tidyverts.svg)
+]
+
+The underlying data structure: [tsibble]()
+
+???
+
+Some new tools are provided to streamline this workflow and make time series
+analysis a bit easier and more fun. The tsibble pkg will focus on
+the tidy and transform part, the fable package will do time series modelling and
+forecasting. The visualisation is done with ggplot2 and its ext.
+
+To make this workflow work, they're going to share the same underlying data
+str, which is a new data abstraction for time series.
+
+---
+class: inverse middle center
+
+.animated.bounce[
+&lt;img src="img/tsibble.png" height=280px&gt;
+]
+
+## A modern reimagining of time series
+
+???
+
+We call it "tsibble", which is a time series tibble. If you know, ts is 
+the native object to represent time series in R, so this is where the name 
+tsibble comes from.
+
+---
+
+# An example: electricity consumption
+
+
+```
+#&gt; # A tibble: 46,102,229 x 8
+#&gt;   customer_id reading_datetime    general_supply_…
+#&gt;         &lt;int&gt; &lt;dttm&gt;                         &lt;dbl&gt;
+#&gt; 1     8143667 2013-04-03 07:30:00            0.117
+#&gt; 2     8143667 2013-04-03 08:00:00            0.051
+#&gt; 3     8143667 2013-04-03 08:30:00            0.085
+#&gt; 4     8143667 2013-04-03 09:00:00            0.165
+#&gt; # … with 4.61e+07 more rows, and 5 more variables:
+#&gt; #   event_key &lt;int&gt;, controlled_load_kwh &lt;int&gt;,
+#&gt; #   gross_generation_kwh &lt;int&gt;,
+#&gt; #   net_generation_kwh &lt;int&gt;, other_kwh &lt;int&gt;
+```
+
+.center[
+.card[.large[many series]]
+.card[.large[many measurements]]
+.card[.large[fine time resolutions]]
+]
+
+.footnote[[Data source: Department of the Environment and Energy, Australia](https://data.gov.au/dataset/4e21dea3-9b87-4610-94c7-15a8a77907ef)]
+
+???
+
+Now we're going to have some fun with an open dataset. This dataset is about residential
+electricity consumption in Australia. It's a tibble with 46M obs and 8 variables.
+The column `customer_id` includes unique identifiers for each household;
+thousands of households in this data. And `reading_datetime` gives the 
+timestamps when the reading is recorded every 30 mins. `general_supply` is the 
+variable that we're interested in forecasting. There are some other 
+measurements in the table as well. How are we going to turn this data into a
+tsibble.
+
+---
+
+## Time series has its own semantics
+
+
+```r
+elec_ts &lt;- elec_tbl %&gt;% 
+  as_tsibble(
+    key = id(customer_id), index = reading_datetime
+  )
+```
+
+1. &lt;i class='far fa-clock'&gt;&lt;/i&gt; **index**: a variable that represents **time**
+2. &lt;i class="fas fa-users"&gt;&lt;/i&gt; **key**: identifying variables that define **series**
+.center[
+*.red[1.] + .red[2.] determine distinct rows in a tsibble.*
+]
+
+???
+
+What makes time series special or different from a tibble? Bc it has its own semantics.
+
+The first is obviously the index variable that represents time. In this case,
+it's `reading_datetime`. Tsibble supports a wide range of time classes, from numerics
+to nanotime, and ordered factors. The second component is what we call "key". They are
+identifying variables that define series or entities over time. For this example,
+each household is a series and the key variable is `customer_id`. The key can
+include multiple variables too.
+
+Index defines the time and key defines the series.
+
+The key together with the index uniquely identifies each observation in a tibble.
+Basically it means each customer has to have unique timestamps.
+
+---
+
+## Contextual pretty printing
+
+
+```
+*#&gt; # A tsibble: 46,102,229 x 8 [30m] &lt;UTC&gt;
+*#&gt; # Key:       customer_id [2,924]
+#&gt;   customer_id reading_datetime    general_supply_…
+#&gt;         &lt;int&gt; &lt;dttm&gt;                         &lt;dbl&gt;
+#&gt; 1     8143667 2013-04-03 07:30:00            0.117
+#&gt; 2     8143667 2013-04-03 08:00:00            0.051
+#&gt; 3     8143667 2013-04-03 08:30:00            0.085
+#&gt; 4     8143667 2013-04-03 09:00:00            0.165
+#&gt; # … with 4.61e+07 more rows, and 5 more variables:
+#&gt; #   event_key &lt;int&gt;, controlled_load_kwh &lt;int&gt;,
+#&gt; #   gross_generation_kwh &lt;int&gt;,
+#&gt; #   net_generation_kwh &lt;int&gt;, other_kwh &lt;int&gt;
+```
+
+.center[
+.card[.large[time interval]]
+.card[.large[time zone of date-times]]
+.card[.large[the number of series]]
+]
+
+???
+
+Now we have a tsibble.
+
+Tibble gives a very nice printing method and tsibble is going to enhance that by adding
+contextual information. Now we have a tsibble with its data dimensions. It
+recognises 30 min interval and the time zone associated with the index. Here we
+have UTC, but you might have time zones with DST. Tsibble will respect any time
+zone.
+
+The key variable is reported with the number of series. We have 2,924 customers
+in this big table.
+
+---
+
+## Look at data early: time gaps
+
+&lt;img src="figure/line-na-1.svg" style="display: block; margin: auto;" /&gt;
+
+```r
+elec_ts %&gt;% fill_gaps()
+```
+
+&lt;img src="figure/fill-gaps-1.svg" style="display: block; margin: auto;" /&gt;
+
+???
+
+We have some time gaps in this data. They are implicit missing values. Since
+ggplot2 isn't aware of these gaps, it always draws a straight line between data
+segments if use `geom_line()`. Tsibble comes with a handy function `fill_gaps()`. 
+It fills in these gaps with `NA` by default or you can do by values or functions.
+So these lines can be removed from the plot easily with `fill_gaps()`.
+
+---
+
+## Implicit missing value handlers
+
+.pull-left[
+.div-middle[
+1. Check: `has_gaps()`
+2. Reveal: `scan_gaps()`
+3. Summarise: `count_gaps()`
+4. Fill in time gaps: `fill_gaps()`
+]
+]
+.pull-right[
+.large[
+```r
+has_gaps(elec_ts)
+```
+
+```
+#&gt; # A tibble: 2,924 x 2
+#&gt;    customer_id .gaps
+#&gt;          &lt;int&gt; &lt;lgl&gt;
+#&gt;  1     8143667 FALSE
+#&gt;  2     8143741 FALSE
+#&gt;  3     8143763 FALSE
+#&gt;  4     8143811 FALSE
+#&gt;  5     8143817 FALSE
+#&gt;  6     8143819 FALSE
+#&gt;  7     8143839 FALSE
+#&gt;  8     8143877 FALSE
+*#&gt;  9     8144653 TRUE 
+*#&gt; 10     8144679 TRUE 
+#&gt; # … with 2,914 more rows
+```
+]
+]
+
+???
+
+Except for `fill_gaps()`, tsibble provides other three verbs to handle implicit
+missing values. They are all suffixed by `_gaps()`. Nearly 20% of customers have
+time gaps. The output shown here, you can see the last two customers with gaps.
+Almost all model functions require a complete series. So it's a good
+practice to look at and fill in those time gaps at the first place.
+
+---
+
+## A new adverb `index_by()`: time-aware grouping
+
+
+```r
+elec_avg &lt;- elec_ts %&gt;% 
+* index_by(datetime = floor_date(reading_datetime, "hour")) %&gt;%
+  summarise(avg_kwh = mean(general_supply_kwh)) %&gt;% 
+  print()
+```
+
+```
+*#&gt; # A tsibble: 8,760 x 2 [1h] &lt;UTC&gt;
+#&gt;   datetime            avg_kwh
+#&gt;   &lt;dttm&gt;                &lt;dbl&gt;
+#&gt; 1 2013-01-01 00:00:00   0.251
+#&gt; 2 2013-01-01 01:00:00   0.221
+#&gt; 3 2013-01-01 02:00:00   0.196
+#&gt; 4 2013-01-01 03:00:00   0.182
+#&gt; # … with 8,756 more rows
+```
+
+???
+
+Tsibble works nicely with dplyr and tidyr verbs. A new adverb you will use 
+quite often is `index_by()`. It's similar to `group_by()` by preparing grouping str,
+but it only groups the index. Combined with `summarise()`, the data can be
+aggregated to any higher-level time resolutions.
+
+For example, I want to work with hourly data instead of 30 mins. Then I use
+`floor_date()`/`celling_date()`/`round_date()` from the lubridate pkg on the 
+index variable inside the `index_by()`, followed by `summarise()`. I'll get hourly 
+average electricity usage across all the households. The result is going to be a 
+single time series at one hour interval. The key is implicit.
+
+---
+
+## Functional programming: map and roll
+
+.left-column[
+&lt;br&gt;
+&lt;br&gt;
+![purrr-logo](https://raw.githubusercontent.com/rstudio/hex-stickers/master/PNG/purrr.png)
+]
+
+--
+
+.right-column[
+&lt;div style="width:100%;height:0;padding-bottom:64%;position:relative;"&gt;&lt;iframe src="https://giphy.com/embed/xoSaxIp8f9JPa" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen&gt;&lt;/iframe&gt;&lt;/div&gt;&lt;p&gt;&lt;a href="https://giphy.com/gifs/cat-rolls-xoSaxIp8f9JPa"&gt;&lt;/a&gt;&lt;/p&gt;
+]
+
+???
+
+Another chunk of operations for time series is definitely rolling window. It
+not only does iteration over each element like what `purrr::map()` does, but 
+also needs to roll. What I'm going to do is to wake up this cat, and let her roll.
+
+---
+
+.pull-left[
+slide
+![](img/slide.gif)
+tile
+![](img/tile.gif)
+stretch
+![](img/stretch.gif)
+]
+.pull-right[
+&lt;br&gt;
+&lt;img src="img/window.png"&gt;
+Type stability suffix: `*_dbl()`, `*_int()`, `*_lgl()`, `*_chr()`, `*_dfr()`, `*_dfc()`
+
+Parallel processing prefix: `future_*`.
+]
+
+???
+
+Actually there are 3 different types of rolling operations: sliding, tiling,
+and stretching. It's just like purrr, `slide()` takes a single input, `slide2()` takes
+two inputs and `pslide()` for multiples. If you have a data frame to roll by obs, you
+need to use `pslide()`. For the purpose of type stability,
+they are going to return a list, and other variants include integers, characters
+and etc. And in the recent version, I've added the
+parallel support, they are all prefixed with `future_` by using the furrr package
+by Davis as a backend. If doing some rolling regression, it's nice to save some time by 
+rolling in parallel.
+
+You can put an arbitrary function to these rolling window.
+
+---
+
+## Rolling averages
+.pull-left[
+
+```r
+slide_dbl(x, ~ mean(.), 
+  .size = 24)
+```
+.div-middle[
+
+```r
+tile_dbl(x, ~ mean(.), 
+  .size = 24)
+```
+]
+.div-middle[
+
+```r
+stretch_dbl(x, ~ mean(.), 
+  .init = 24)
+```
+]
+]
+.pull-right[
+&lt;img src="img/slide-mean.gif", height="160px"&gt;
+&lt;img src="img/tile-mean.gif", height="160px"&gt;
+&lt;img src="img/stretch-mean.gif", height="160px"&gt;
+]
+
+???
+
+A simple example is rolling average. It uses purrr-like syntax. You can call
+a function name or an anonymous function using `~`. I specify the window size to be 
+24 (1 day) and it's rolling forward from left to right. If you want to move in an 
+opposite direction, just change the window size to be negative. These 3 rolling
+window as you can result in different averages.
+
+---
+
+## Rolling forecast
+
+
+```r
+plan(multiprocess)
+expand_forecast &lt;- function(...) {
+  # 3 lines of tsibble + fable code ...
+}
+elec_avg %&gt;% 
+  future_pstretch(expand_forecast, .size = 24, .init = 168)
+```
+.center[
+&lt;img src="img/rolling.gif"&gt;
+]
+
+???
+
+A more advanced example, but extremely useful is rolling forecast. I defined
+a custom function called `expand_forecast()` and also enable parallel processing
+by using `future_pstretch()`. It's never been that easy to do a expanding forecast.
+A nice thing about functional programming, we can focus on writing expressions,
+instead of wring a long for-loop statement. So what sort of code goes into the 
+`expand_forecast()`. This Q brings us to the next part of the presentation: 
+tidy forecasting.
+
+---
+class: inverse middle center
+
+.animated.bounce[
+&lt;img src="img/fable.png" height=280px&gt;
+]
+
+## Tidy forecasting
+
+???
+
+How many of you have used the forecast package before?
+
+The fable is the tidy replacement of the forecast package.
+
+---
+
+## Why fable?
+
+&gt; 1. It makes forecasting tables.
+&gt; 2. A fable is like a forecast: it's never true, but it tells you something important about reality.
+&gt;
+&gt; **Rob J Hyndman**
+
+???
+
+Why we call it fable?
+
+---
+
+.left-column[
+## The first 30 days on the calendar
+]
+.right-column[
+
+
+&lt;img src="figure/calendar-train-1.svg" style="display: block; margin: auto;" /&gt;
+]
+
+???
+
+Let's look at the data in the first 30 days of January. Each facet gives
+a daily snapshot of hourly electricity demand. The peak in the late afternoon is
+driven by the use of air conditioning. January is summer time in Australia. You
+can see some days have much higher usage coloured by red, bc they are very hot 
+days with max temp greater than 32 degrees.
+
+I'm going to use this subset to forecast the demand one day ahead. And I hold 
+the data of Jan 31 as the test set.
+
+---
+
+## .blue[mable]: `model()` the data
+
+
+
+.small[
+
+```r
+elec_mbl &lt;- elec_jan %&gt;% 
+  model(
+*   yesterday = NAIVE(avg_kwh ~ lag("1 day")),
+*   ets = ETS(avg_kwh)
+  )
+```
+]
+
+.pull-left[
+```
+*#&gt; # A mable: 1 x 2
+#&gt;   yesterday ets         
+#&gt;   &lt;model&gt;   &lt;model&gt;     
+#&gt; 1 &lt;SNAIVE&gt;  &lt;ETS(M,N,M)&gt;
+```
+]
+.pull-right[
+.alert[
+1. **succinct model representation**
+2. **`summarise()` semantics: reduces rows**
+]
+]
+
+???
+
+Let's model the data.
+
+I construct two models for the tsibble data with the `model()` verb. The first
+model I built is a naive model as a benchmark. The naive method simply uses the
+observed values from yesterday as forecasts. The second model is ETS, exponential
+smoothing, which can be thought of as a weighted average of the past values.
+ETS is also short for error, trend and seasonality. 
+
+The model function uses the formula interface. On the LHS, we specify the average 
+supply as the response variable, and on the RHS we can put some specials related
+to the method. I've specified the naive function to use the 24 values from yesterday instead
+of the value from the previous hour. If we don't specify the RHS like ets, it will do 
+automatic model selection by picking up the best model for you.
+
+Now we have a mable back. A mable is a model table that contains model objects.
+Each cell shows a succinct model representation by saying I have a seasonal naive
+model and an ets with three selected components.
+
+Models are a reduced form of the data.
+So the `model()` function is an analogue of `summarise()`, using the same semantics, 
+because it also reduces the data down to a single summary but it happens to be 
+a model object of that summary.
+
+---
+
+## Inspect mable
+
+1. `tidy()` model parameters
+2. `glance()` a one-row per model summary
+3. `augment()` with model fits (`.fitted` &amp; `.resid`)
+
+
+```
+#&gt; # A tibble: 26 x 4
+#&gt;   .model term  estimate std.error
+#&gt;   &lt;chr&gt;  &lt;chr&gt;    &lt;dbl&gt;     &lt;dbl&gt;
+#&gt; 1 ets    alpha    0.882        NA
+#&gt; 2 ets    gamma    0.118        NA
+#&gt; 3 ets    l        0.385        NA
+#&gt; 4 ets    s0       0.860        NA
+#&gt; # … with 22 more rows
+```
+
+???
+
+To look at parameter estimates, information criterion or residuals from
+a mable. We just use the familiar broom functions: `tidy()`, `glance()` and `augment()`.
+By applying the `tidy()` function on the mable, we get the parameter estimates
+for the models we've built. We have got a bunch of parameters for ets like 
+smoothing parameters alpha &amp; beta and initial level estimates.
+
+---
+
+## .blue[fable]: `forecast()` the future
+
+.pull-left[
+
+```r
+elec_fbl &lt;- elec_mbl %&gt;% 
+  forecast(h = "1 day")
+```
+]
+.pull-right[
+.alert[
+1. **human-friendly specification**
+2. **point forecasts + distribution**
+]
+]
+
+
+```
+*#&gt; # A fable: 48 x 4 [1h] &lt;UTC&gt;
+*#&gt; # Key:     .model [2]
+#&gt;   .model    datetime            avg_kwh .distribution 
+#&gt;   &lt;chr&gt;     &lt;dttm&gt;                &lt;dbl&gt; &lt;dist&gt;        
+#&gt; 1 yesterday 2013-01-31 00:00:00   0.179 N(0.18, 0.031)
+#&gt; 2 yesterday 2013-01-31 01:00:00   0.164 N(0.16, 0.031)
+#&gt; 3 yesterday 2013-01-31 02:00:00   0.158 N(0.16, 0.031)
+#&gt; 4 yesterday 2013-01-31 03:00:00   0.151 N(0.15, 0.031)
+#&gt; # … with 44 more rows
+```
+
+???
+
+It's time to forecast. We pipe the mable into the `forecast()`, and we're doing
+a one-day-ahead forecast or 24-step-ahead. It supports human-friendly input and 
+so we can read more naturally with forecast horizon 1 day. It's convenient,
+bc we no longer need to compute how many hours/minutes/seconds in a day. But you
+can still do `h = 24`.
+
+We're done with the forecast, we have a forecasting table, which is a fable. It's
+a special tsibble, which includes the future predications. It not only tells you
+the point forecasts, but also an underlying pred distribution that involves uncertainty.
+Bc we are forecasters, not fortune tellers.
+
+You can see the normal distribution with the mean and the standard deviation in
+the last column `.distribution`.
+
+This is one of my favourite features about fable.
+
+---
+
+.left-column[
+## Visualise fable .large[`geom_forecast()`]
+### - Yesterday
+]
+.right-column[
+&lt;img src="figure/vis-naive-1.svg" style="display: block; margin: auto;" /&gt;
+]
+
+???
+
+We'll see the forecasts more clearly with plots using `geom_forecast()`.
+
+The naive method repeats the yesterday's pattern, but the 80 and 95 PIs are quite 
+wide, and even goes below zero.
+
+How about ets?
+
+---
+
+.left-column[
+## Visualise fable .large[`geom_forecast()`]
+### - Yesterday
+### - ETS
+]
+.right-column[
+&lt;img src="figure/vis-ets-1.svg" style="display: block; margin: auto;" /&gt;
+]
+
+???
+
+The ets nicely captures the daily trend and produces a much narrower PI.
+
+---
+
+## Assess model performance
+
+
+```r
+accuracy(elec_fbl, elec_jan31)
+```
+
+```
+#&gt; # A tibble: 2 x 8
+#&gt;   .model   Type      ME   RMSE    MAE   MPE  MAPE  ACF1
+#&gt;   &lt;chr&gt;    &lt;chr&gt;  &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+#&gt; 1 ets      Test  0.0681 0.0866 0.0681  18.5  18.5 0.906
+#&gt; 2 yesterd… Test  0.0700 0.0972 0.0700  17.3  17.3 0.942
+```
+
+&lt;img src="figure/pred-data-1.svg" style="display: block; margin: auto;" /&gt;
+
+???
+
+Which model performs better?
+
+Use `accaracy()` to compare the predications with the test set that I held before.
+
+Looking at accuracy measures, ets does slightly better than naive in terms of RMSE. 
+But they all tend to give underestimated predications. The blank line in the plot is
+the actual data. Looks like it's another hot day in January. If we have weather
+information like temperatures, we can include them to improve the forecasts, but
+need to use a different model that allows for ex regressors, like ARIMA.
+
+So far, I have showed all the steps from model building to model assessments for just one
+time series. Would be any different if we have multiple time series?
+
+---
+
+## Models are fundamentally scalable
+
+
+```
+#&gt; # A tsibble: 491,182 x 3 [1h] &lt;UTC&gt;
+#&gt; # Key:       customer_id [1,480]
+#&gt;   customer_id datetime            general_supply_kwh
+#&gt;         &lt;int&gt; &lt;dttm&gt;                           &lt;dbl&gt;
+#&gt; 1     8144977 2013-01-01 00:00:00              0.219
+#&gt; 2     8144977 2013-01-01 01:00:00              0.169
+#&gt; 3     8144977 2013-01-01 02:00:00              0.193
+#&gt; 4     8144977 2013-01-01 03:00:00              0.225
+#&gt; # … with 4.912e+05 more rows
+```
+
+
+```r
+elec_fct &lt;- elec_sub %&gt;% 
+  model(ets = ETS(log(general_supply_kwh))) %&gt;% 
+  forecast(h = "1 day")
+```
+
+???
+
+No. Bc models are fundamentally scalable.
+
+Tsibble as a modern reimaging of time series, it designs for hosting many time
+series together. Especially the series have already been defined when we created the
+tsibble. We are obviously interested in forecasting the demand for each household
+here.
+
+This is the subset, including 1480 series. There's no extra steps needed. Just as 
+what we did before, we can directly pipe them into `model()`, and it will fit an 
+ets model for each time series at once. and then happy `forecast()`.
+I also take a log transformation on the response variable to ensure that I get
+positive forecasts back. The `forecast()` will take care of the back-transformation
+for you.
+
+---
+
+## Key is the 🔑 to unlock series across tsibble, mable and fable
+
+.pull-left[
+.large[
+
+```
+#&gt; # A mable: 1,480 x 2
+#&gt; # Key:     customer_id [1480]
+#&gt;    customer_id ets         
+#&gt;          &lt;int&gt; &lt;model&gt;     
+#&gt;  1     8144977 &lt;ETS(A,N,A)&gt;
+#&gt;  2     8147121 &lt;ETS(A,N,A)&gt;
+#&gt;  3     8147611 &lt;ETS(A,N,N)&gt;
+#&gt;  4     8147619 &lt;ETS(A,N,A)&gt;
+#&gt;  5     8147667 &lt;ETS(A,N,N)&gt;
+#&gt;  6     8147703 &lt;ETS(A,N,N)&gt;
+#&gt;  7     8147725 &lt;ETS(A,N,N)&gt;
+#&gt;  8     8147769 &lt;ETS(A,N,A)&gt;
+#&gt;  9     8147795 &lt;ETS(A,N,A)&gt;
+#&gt; 10     8147803 &lt;ETS(A,N,N)&gt;
+#&gt; # … with 1,470 more rows
+```
+]
+]
+.pull-right[
+
+&lt;img src="figure/batch-plot-1.svg" style="display: block; margin: auto;" /&gt;
+]
+
+???
+
+You can see 1480 models have been fitted. The key variable is
+always the key to refer to a series across tsibble, mable and fable. 
+
+We do not store historical data in model objects and fable.
+
+Models are scalable but visualisation is not. So I just plot 4 customers with
+their forecasts here. At the individual levels, lots of noise, and much larger PI
+as well.
+
+---
+
+## Much more in the tidyverts
+
+* Decomposition `STL()`
+* Simulation `simulate()`
+* Interpolation `interpolate()`
+* Refitting and streaming `refit()` &amp; `stream()`
+
+???
+
+I've showed a proportion of what tsibble and fable can do. We've got decomposition,
+simulation based on model fits, interpolation of missing values and model 
+supports for streaming data. So check them out.
+
+---
+
+## Joint work
+
+.div-middle[
+.center[
+.portrait[
+![](img/di.jpg)
+Di Cook &lt;br&gt;
+&lt;i class='fab fa-twitter' style='color:#6CADDE'&gt;&lt;/i&gt; [@visnut](http://twitter.com/visnut)
+]
+.portrait[
+![](img/rob.jpg)
+Rob J Hyndman &lt;br&gt;
+&lt;i class='fab fa-twitter' style='color:#6CADDE'&gt;&lt;/i&gt; [@robjhyndman](http://twitter.com/robjhyndman)
+]
+.portrait[
+![](https://mitchelloharawild.com/img/circle.jpg)
+Mitchell O'Hara‑Wild &lt;br&gt;
+&lt;i class='fab fa-twitter' style='color:#6CADDE'&gt;&lt;/i&gt; [@mitchoharawild](http://twitter.com/mitchoharawild)
+]
+]
+]
+
+???
+
+It's the joint work w
+
+---
+class: middle center
+
+.card[
+[.tidyverts[tidyver.orange[ts].org]](http://tidyverts.org)
+]
+.card[
+![](img/tsibble.png)
+[**pkg.earo.me/tsibble**](https://pkg.earo.me/tsibble)
+]
+.card[
+![](img/fable.png)
+[**github.com/tidyverts/fable**](https://github.com/tidyverts/fable)
+]
+&lt;br&gt;
+.card[
+![](img/slides-title.png)
+[**slides.earo.me/rstudioconf19**](https://slides.earo.me/rstudioconf19)
+]
+.card[
+![](img/Octocat.png)
+[**github.com/earowang/rstudioconf19**](https://github.com/earowang/rstudioconf19)
+]
+
+???
+
+I have to mention that the tsibble is on CRAN but fable is on Github atm. They
+belong to tidyverts.org
+
+These are the useful links to these packages, my slides and the source code behind
+the slides.
+    </textarea>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "16:9",
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function() {
+  var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})();</script>
+
+<script>
+(function() {
+  var i, text, code, codes = document.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+})();
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
