@@ -29,5 +29,6 @@ watchman -- trigger $PWD auto-commit '**/*' -- ./auto-commit.sh
 | meetup17 | [slides.earo.me/meetup17](https://slides.earo.me/meetup17) | [github.com/earowang/meetup17](https://github.com/earowang/meetup17)
 | phd18 | [slides.earo.me/phd18](https://slides.earo.me/phd18) | [github.com/earowang/phd18](https://github.com/earowang/phd18)
 | rladies-pkg | [slides.earo.me/rladies-pkg](https://slides.earo.me/rladies-pkg) | [github.com/earowang/rladies-pkg](https://github.com/earowang/rladies-pkg)
+| rstudioconf19 | [slides.earo.me/rstudioconf19](https://slides.earo.me/rstudioconf19) | [github.com/earowang/rstudioconf19](https://github.com/earowang/rstudioconf19)
 | useR18 | [slides.earo.me/useR18](https://slides.earo.me/useR18) | [github.com/earowang/useR18](https://github.com/earowang/useR18)
 | wombat17 | [slides.earo.me/wombat17](https://slides.earo.me/wombat17) | [github.com/earowang/wombat17](https://github.com/earowang/wombat17)
