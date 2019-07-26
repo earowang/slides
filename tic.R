@@ -16,7 +16,7 @@ get_stage("deploy") %>%
       )
       template <- readLines("README-template.md")
       done <- whisker::whisker.render(template)
-      usethis::write_over("README.md", done, quiet = TRUE)
+      usethis::write_over("~/README.md", done, quiet = TRUE)
     }
   ) %>% 
   add_step(step_push_deploy())
