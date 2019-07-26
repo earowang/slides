@@ -141,14 +141,14 @@ Tsibble is a data- and model-oriented object.
 
 I said before tsibble is a tidier data, because
 
-1. The index variable provides a contextual basis for temporal data. Tsibble supports the common ones: dates and date-times with inherent ordering, and others like intradays or numbers. Custom time classes can also be supported, as long as they can be ordered from past to future.
+1. The index variable provides a contextual basis for temporal data. Tsibble supports the common ones: dates and date-times, and others like intradays or numbers. Custom time classes can also be supported, as long as they can be ordered from past to future.
 2. For example, if you're doing survey studies, the participants are the observational units forming the key. Or if you're looking at monthly energy use of households, the households form the key.
 3. In other words, an observational unit can't allow for duplicated time stamps.
 4. 
 
 The 1st and 2nd bullet points make tsibble a data-centric object. And the 3rd and 4th make sure it can be probably analysed and modeled later.
 
-Okay, how would these four points turn a data set into a tsibble. Time for an example.
+Okay, how would these four points turn a data set into a tsibble. Time for tying some R code.
 
 ---
 
@@ -257,7 +257,7 @@ class: middle
 
 ???
 
-As you can see, we've got two problematic data entries. The flight number `NK630` has been scheduled twice at the same departure time. They have identical arrival time, departure delay, arrival delay, and carrier. But they are different in tail number, origin and destination. After researching this flight number and going through the whole database, my decision is to remove the highlighted entry: the flight from LAX to DEN, bc this flight doesn't operate on this route during that period.
+As you can see, we've got two problematic data entries. The flight number `NK630` has been scheduled twice at the same departure time. They have identical arrival time, departure delay, arrival delay, and carrier. But they are different in tail number, origin and destination. After doing  some research this flight number and going through the whole database, my decision is to remove the highlighted entry: the flight from LAX to DEN, bc this flight doesn't operate on this route during that period.
 
 ---
 
@@ -305,9 +305,9 @@ The printing method tries to give useful information. The exclamation mark highl
 
 What I have done so far is going through the tidy stage in order to create the tsibble object. Tsibble complains early when the data involves duplicates, like the flights data. We need to find the duplicates and fix them. We now end up with a properly-defined temporal data.
 
-Tsibble permits time gaps. It is recommended to check time gaps before transformation and modelling. Bc you are likely to encounter errors if gaps in time. Luckily no gaps in this data, bc it's currently irregular.
+Tsibble permits time gaps. It is recommended to check time gaps before transformation and modelling. Bc you are likely to encounter errors if gaps in time. Bc it's currently irregular, we don't have gaps in theory.
 
-Tsibble provides formal organisation on how to tidy your temporal data.
+This is how tsibble provides formal organisation on how to tidy your temporal data.
 
 ---
 
@@ -332,7 +332,7 @@ class: inverse middle
 
 Tsibble is not only a data abstraction, but also a DSL for wrangling temporal data.
 
-It tries to follow closely to the spirit of the tidyverse, and those familiar with tidyverse will have less resistance to learning the new semantics.
+It tries to follow closely to the spirit of the tidyverse, and those familiar with tidyverse will have less cognitive loads to learning the new semantics.
 
 It extends the existing tidyverse vocabulary to the time domain, and introduces some new verbs for making wrangling easier and more intuitive.
 
@@ -367,13 +367,13 @@ carrier_delay &lt;- flights_ts %&gt;%
 
 Continue with the flights example. It's a great data set, bc it's very fine resolution, detailed information about each individual flight.
 
-But it is overwhelming to explore the data at the individual level straightway. We usually start with aggregated data first.
+But it is overwhelming to explore the data at the individual level straightway. We usually start to look at aggregated data first.
 
-For example, if we're interested in summarising average weekly on-time performance by each carrier, we write the R code as documenting the approaches to the problem.
+For example, if we're interested in summarising average weekly on-time performance by each carrier, we write the expressive R code just like how I phrased the problem.
 
 You've probably seen `group_by()` and `summarise()` before, the only new function here is `index_by()`, grouping the tsibble index. Since tsibble knows the index, the dot refers to the index variable, which saves some keystrokes. But you can still do.
 
-The `index_by()` and `summarise()` combo also helps to regularise the flights data to weekly data. The subjects of interest has also shifted from flights to carriers.
+The `index_by()` and `summarise()` combo also helps to regularise the flights data to weekly data. The subjects of interest has also shifted from 22,000 flights to 12 carriers.
 
 Almost all dplyr verbs work with tsibble.
 
@@ -472,7 +472,7 @@ has_gaps(carrier_delay)
 
 In addition to `index_by()`, there are some other domain-specific verbs. You may find this set of gap-aware functions useful for handling implicit gaps in time. As you can see, each carrier has no gaps over weeks.
 
-Other shortcuts to reduce the typing.
+Some other shortcuts are available for reducing the typing in the time domain.
 
 ---
 
@@ -555,7 +555,7 @@ A toy example: computing moving averages for window size 2 and median for 3
 
 In order to compute the mean and median, I have to do a bit of setup for the loop. But the only part we're interested is the action: mean and median.
 
-The length of output is not stable, depending on the the choice window size. This is for loop
+The length of output is not stable, depending on the the choice of window size. This is for loop
 
 ---
 
@@ -629,7 +629,7 @@ What I mean by FP? It abstracts away the for-loop, and focus on what you want to
 
 ???
 
-It's a rolling family with 3 variants
+We a rolling family with 3 variants
 
 1. sliding: moves a fixed length window through the data with overlapping
 2. tiling: moves a fixed length window through the data w/o overlapping
@@ -637,13 +637,9 @@ It's a rolling family with 3 variants
 
 The animation shows three different rolling averages.
 
-it takes an arbitrary function: simple complex
+They take an arbitrary function: simple complex
 
-time series CV: easier to compute forecasting accuracy by comparing rolling forecast with rolling data
-
-...
-
-The only limit for how to use this family for window-related analysis is your imagination. 
+They can also run in parallel.
 
 ---
 
@@ -652,11 +648,7 @@ background-size: 70%
 background-position: 91% 38%
 
 .left-column[
-&lt;br&gt;
-&lt;br&gt;
-&lt;br&gt;
-&lt;br&gt;
-## .center[‼️]
+## .center[`summarise()`]
 ]
 .right-column[
 .animated.slower.rollIn.delay-1s[
@@ -670,7 +662,7 @@ background-position: 91% 38%
 
 Lemme briefly summarise the tsibble package.
 
-Tsibble provides a uniform and standardized temporal data structure for downstream analytic tasks. You can easily transform via dplyr and tsibble, visualise with ggplot2, and do modeling, and smoothly shift between them for rapid iteration to gain data insights.
+Tsibble provides a uniform and standardized temporal data structure for downstream analytic tasks. You can easily transform via dplyr and tsibble, visualise with ggplot2, and do modeling with other supporting packages.
 
 ---
 
@@ -692,7 +684,9 @@ If you want to take tsibble further for forecasting and high-dimensional analysi
 
 The fable package is replacing the forecast package. The fasster models time series with multiple seasonality. The feasts package computes a number of time series features and provides many graphics.
 
-We have already started teaching this set of cutting-edge tools at Monash Uni this year, making time series teaching and learning easier.
+We have already started teaching this set of new tools at Monash Uni this year. It actually making both teaching and learning ts much easier.
+
+If you'd like to get some of those stickers, please see me after the talk.
 
 ---
 
