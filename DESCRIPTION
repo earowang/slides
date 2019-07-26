@@ -3,7 +3,6 @@ Version: 1.0.0
 Depends: 
     fs,
     whisker,
-    usethis,
     R (>= 3.1)
 Suggests: 
     covr
