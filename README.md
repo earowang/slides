@@ -25,6 +25,7 @@ watchman -- trigger $PWD auto-commit '**/*' -- ./auto-commit.sh
 | iasc17 | [slides.earo.me/iasc17](https://slides.earo.me/iasc17) | [github.com/earowang/iasc17](https://github.com/earowang/iasc17)
 | isu18 | [slides.earo.me/isu18](https://slides.earo.me/isu18) | [github.com/earowang/isu18](https://github.com/earowang/isu18)
 | jsm18 | [slides.earo.me/jsm18](https://slides.earo.me/jsm18) | [github.com/earowang/jsm18](https://github.com/earowang/jsm18)
+| jsm19 | [slides.earo.me/jsm19](https://slides.earo.me/jsm19) | [github.com/earowang/jsm19](https://github.com/earowang/jsm19)
 | medascin17 | [slides.earo.me/medascin17](https://slides.earo.me/medascin17) | [github.com/earowang/medascin17](https://github.com/earowang/medascin17)
 | meetup17 | [slides.earo.me/meetup17](https://slides.earo.me/meetup17) | [github.com/earowang/meetup17](https://github.com/earowang/meetup17)
 | phd18 | [slides.earo.me/phd18](https://slides.earo.me/phd18) | [github.com/earowang/phd18](https://github.com/earowang/phd18)
