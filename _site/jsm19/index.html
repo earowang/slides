@@ -16,9 +16,19 @@ class: center, middle, inverse, title-slide
 ---
 
 
+class: middle center inverse
 
 
 
+
+
+![](img/just-r-code.gif)
+
+???
+
+In short, I just introduce an R package for tidy temporal data analysis.
+
+---
 
 .left-column[
 .center[
@@ -120,7 +130,7 @@ What can tsibble do?
 
 First of all, tsibble represents tidy temporal data.
 
-A tsibble is first built on top of the tidy data principles. Tidy data is organised in the rectangular format: each observation forms a row; each variable forms a column. But temporal data is more of a contextual data object. We have introduced index and key to make the temporal context explicit. And the rest are measurements. But still this figure just describes the shape of a tsibble.
+A tsibble is first built on top of the tidy data principles. Tidy data is organised in the rectangular format: each observation forms a row; each variable forms a column. But temporal data is more of a contextual data object. We have introduced index and key to make the temporal context explicit. And the rest of the columns are measurements. But still this figure just describes the shape of a tsibble.
 
 ---
 
@@ -257,7 +267,7 @@ class: middle
 
 ???
 
-As you can see, we've got two problematic data entries. The flight number `NK630` has been scheduled twice at the same departure time. They have identical arrival time, departure delay, arrival delay, and carrier. But they are different in tail number, origin and destination. After doing  some research this flight number and going through the whole database, my decision, a simple decision, is to remove the highlighted entry: the flight from LAX to DEN, bc this flight doesn't operate on this route during that period. If I had more domain knowledge, maybe I could correct this. But the message here is fixing the duplicates.
+As you can see, we've got two problematic data entries. The flight number `NK630` has been scheduled twice at the same departure time. They have identical arrival time, departure delay, arrival delay, and carrier. But they are different in tail number, origin and destination. After doing  some research about this flight number and going through the whole database, my decision, a simple decision, is to remove the highlighted entry: the flight from LAX to DEN, bc this flight doesn't operate on this route during that period. If I had more domain knowledge, maybe I could correct this instead of deletion. But the message here is fixing the duplicates.
 
 ---
 
@@ -307,7 +317,7 @@ What I have done so far is going through the tidy stage in order to create the t
 
 Tsibble permits time gaps. It is recommended to check time gaps before transformation and modelling. Bc you are likely to encounter errors if gaps in time. Bc it's currently irregular, we don't have gaps in theory.
 
-This is how tsibble provides formal organisation on how to tidy your temporal data.
+This is how tsibble provides formal and explicit organisation on how to tidy your temporal data.
 
 ---
 
@@ -492,26 +502,30 @@ When doing rolling window analysis, we cannot avoid for loops. But tsibble's rol
 
 ---
 
+class: center
+
 ## Map and roll
 
-.left-column[
+.pull-left[
 &lt;br&gt;
 &lt;br&gt;
 &lt;br&gt;
-.center[&lt;img src="https://github.com/rstudio/hex-stickers/blob/master/PNG/purrr.png?raw=true", height = "200px"&gt;]
+&lt;img src="https://github.com/rstudio/hex-stickers/blob/master/PNG/purrr.png?raw=true", height = "200px"&gt;
 ]
 
 --
 
-.right-column[
-&lt;div style="width:100%;height:0;padding-bottom:64%;position:relative;"&gt;&lt;iframe src="https://giphy.com/embed/xoSaxIp8f9JPa" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen&gt;&lt;/iframe&gt;&lt;/div&gt;&lt;p&gt;&lt;a href="https://giphy.com/gifs/cat-rolls-xoSaxIp8f9JPa"&gt;&lt;/a&gt;&lt;/p&gt;
+.pull-right[
+&lt;br&gt;
+&lt;br&gt;
+![](img/cat-rolls.gif)
 ]
 
 ???
 
-In terms of functional programming, you'll definitely know base R `apply()` and purrr `map()` function.
+In terms of functional programming, you'll definitely know base R `apply()` and purrr `map()` function. What they all do is to apply a function over each element iteratively.
 
-What they all do is to apply a function over each element iteratively. But for rolling window, they cannot just sleep but have to roll.
+But for rolling window, they cannot just sleep but have to roll.
 
 ---
 
@@ -555,7 +569,7 @@ A toy example: computing moving averages for window size 2 and median for 3
 
 In order to compute the mean and median, I have to do a bit of setup for the loop. But the only part we're interested is the action: mean and median.
 
-The length of output is not stable, depending on the the choice of window size. This is for loop
+As you can see, the output is not length-stable, depending on the the choice of window size. This is for loop
 
 ---
 
@@ -629,7 +643,7 @@ What I mean by FP? It abstracts away the for-loop, and focus on what you want to
 
 ???
 
-We a rolling family with 3 variants
+We have a rolling family with 3 variants
 
 1. sliding: moves a fixed length window through the data with overlapping
 2. tiling: moves a fixed length window through the data w/o overlapping
