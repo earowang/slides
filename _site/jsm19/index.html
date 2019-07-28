@@ -69,7 +69,7 @@ With the tidyverse, we have such a fluent pipeline to handle data analysis. But 
 
 It is a messy-verse.
 
-There are a few time series data classes in R, but all are designed purely for the modelling purpose, which means the object can be quite different from the data at the "import" stage. No formal organisation is provided on how to reshape the data for modelling, you'll go through such a lumpy path with luck.
+There are a few time series data classes in R, but all are designed purely for the modelling purpose, which means the object can be quite different from the data at the "import" stage. How to convert the raw data to model objects happen under the table. No formal and transparent organisation is provided on how to reshape the data for modelling, you'll go through such a lumpy path with luck.
 
 Once the data is in the modelling shape, transformation and plotting are doable but not that tidy.
 
@@ -135,7 +135,7 @@ class: middle
 3. Each observation should be uniquely identified by **index** and **key**.
 4. Each observational unit should be measured at a common **interval**, if regularly spaced.
 
-Tsibble is a data- and model-oriented object.
+Tsibble is an explicit data- and model-oriented object.
 
 ???
 
@@ -222,7 +222,7 @@ flights %&gt;%
 
 ???
 
-From the passenger's point of view, we're interested in flight number at its scheduled departure time. So `key = ?`, and `index = ?`. Because it's event data with irregular interval, we have to specify `regular = FALSE`.
+There could a few ways to define the key, depending on the perspective. But from the passenger's point of view, we're interested in flight number at its scheduled departure time. So `key = ?`, and `index = ?`. Because it's event data with irregular interval, we have to specify `regular = FALSE`.
 
 Everything looks good to me. Finger crossed.
 
@@ -230,7 +230,7 @@ Oops! We got an error.
 
 The error says: ... and suggests ...
 
-Another way to interpret this error message is that the data set may have data quality issue. Not every data is our beloved iris data set, small and clean. Especially large data sets need somewhat cleaning. Btw, Di will be talking about the history of iris data at ???
+Another way to interpret this error message is that the data set may have data quality issue. Not every data is our beloved iris data set, small and clean. Especially large data sets need somewhat cleaning. Btw, Di Cook will be talking about the history of iris data on Tuesday.
 
 We need to search for those duplicates and hopefully fix them.
 
@@ -257,7 +257,7 @@ class: middle
 
 ???
 
-As you can see, we've got two problematic data entries. The flight number `NK630` has been scheduled twice at the same departure time. They have identical arrival time, departure delay, arrival delay, and carrier. But they are different in tail number, origin and destination. After doing  some research this flight number and going through the whole database, my decision is to remove the highlighted entry: the flight from LAX to DEN, bc this flight doesn't operate on this route during that period.
+As you can see, we've got two problematic data entries. The flight number `NK630` has been scheduled twice at the same departure time. They have identical arrival time, departure delay, arrival delay, and carrier. But they are different in tail number, origin and destination. After doing  some research this flight number and going through the whole database, my decision, a simple decision, is to remove the highlighted entry: the flight from LAX to DEN, bc this flight doesn't operate on this route during that period. If I had more domain knowledge, maybe I could correct this. But the message here is fixing the duplicates.
 
 ---
 
@@ -613,7 +613,7 @@ slide_int(x, median, .size = 3)
 
 ???
 
-What I mean by FP? It abstracts away the for-loop, and focus on what you want to do by supplying a function. And it's length-stable and type-stable.
+What I mean by FP? It abstracts away the for-loop, and focus on what you want to do by supplying a function. And it's length-stable and type-stable. The rolling functions in the tsibble package take care of the rest, and users only need to define the functions.
 
 ---
 
