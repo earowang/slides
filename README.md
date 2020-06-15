@@ -31,6 +31,7 @@ watchman -- trigger $PWD auto-commit '**/*' -- ./auto-commit.sh
 | phd18 | [slides.earo.me/phd18](https://slides.earo.me/phd18) | [github.com/earowang/phd18](https://github.com/earowang/phd18)
 | phd19 | [slides.earo.me/phd19](https://slides.earo.me/phd19) | [github.com/earowang/phd19](https://github.com/earowang/phd19)
 | rladies-pkg | [slides.earo.me/rladies-pkg](https://slides.earo.me/rladies-pkg) | [github.com/earowang/rladies-pkg](https://github.com/earowang/rladies-pkg)
+| rladiesakl20 | [slides.earo.me/rladiesakl20](https://slides.earo.me/rladiesakl20) | [github.com/earowang/rladiesakl20](https://github.com/earowang/rladiesakl20)
 | rstudioconf19 | [slides.earo.me/rstudioconf19](https://slides.earo.me/rstudioconf19) | [github.com/earowang/rstudioconf19](https://github.com/earowang/rstudioconf19)
 | useR18 | [slides.earo.me/useR18](https://slides.earo.me/useR18) | [github.com/earowang/useR18](https://github.com/earowang/useR18)
 | wombat17 | [slides.earo.me/wombat17](https://slides.earo.me/wombat17) | [github.com/earowang/wombat17](https://github.com/earowang/wombat17)
