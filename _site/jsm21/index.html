@@ -33,9 +33,40 @@ class: center, middle, inverse, title-slide
 &lt;img src="figure/temp-freq-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
 
+???
+
+* Nowadays, we often work with a collection of time series instead of univariate series.
+* These time series can often be organised in a hier way, e.g. US &gt; states &gt; counties. Here, AU &gt; States &gt; tourism regions
+* You collect data at the most disaggregated levels, and sum them up to higher levels.
+* A deeper hier, more data available.
+* On the other hand, temporal context itself generates loads of information.
+* TS data can be break down to different temporal frequencies.
+* This chart shows the Australian travelled to Sydney for the Holiday purpose: high in Jan
+* But what's happened to Sep-Oct 2000? Yea, 2000 Sydney Olympics
+
 ---
 
-## Australian tourism data
+## Time series data is rich
+
+.pull-left[
+.brown[1.] often intrinsically hierarchical
+.center[&lt;img src = "img/tree.png", width = 55%&gt;&lt;/img&gt;]
+]
+.pull-right[
+.brown[2.] different temporal frequencies
+&lt;img src="figure/temp-freq-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+.center[&lt;img src = "https://upload.wikimedia.org/wikipedia/en/thumb/8/81/2000_Summer_Olympics_logo.svg/800px-2000_Summer_Olympics_logo.svg.png", width = 30% style = "position:absolute; top: 25.5%; left: 62.5%"&gt;&lt;/img&gt;]
+]
+
+???
+
+* Now we should look forward to 2032 Brisbane Olympics and work on forecasting the number of visits to Brisbane in 2032 using Sydney's data.
+* information are embedded into temporal and structural context.
+* Given such rich data, how should we start exploring time series?
+
+---
+
+## Domestic trips in Australia 🇦🇺
 
 
 ```r
@@ -59,8 +90,12 @@ tourism_monthly
 
 ???
 
-1. hierarchical
-2. Month &gt; Year
+* first and foremost, we need to arrange ts into a tsibble object.
+* here we unlock the domestic trips for lockdown Australia
+* What is a tsibble: a tibble represents time series data.
+* header
+* The idea of key variables is powerful: we know what each time series represents
+* The key provides a central hub for identifying and linking each series in different tables.
 
 ---
 
@@ -71,11 +106,22 @@ class: center
 &lt;iframe src="http://tidyverts.org" frameborder="0" height="500" width="100%"&gt;
 &lt;/iframe&gt;
 
+???
+
+* You may wonder why tsibble? bc we have a growing ecosystem for the tsibble data structure.
+* here tidyverts doesn't mean advocates for the tidyverse; instead it means tidyverse for time series.
+
 ---
 
 ## Sad charts 🙁
 
 &lt;img src="figure/ggplot-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+
+???
+
+* a tsibble is a data frame behind the scene, we can ggplot it.
+* Overplotting, not particular useful
+* upward trends for business, and strong seasonal effects for holidays
 
 ---
 
@@ -103,11 +149,21 @@ tourism_monthly %&gt;% features(Trips, feat_stl)
 #&gt; #   stl_e_acf1 &lt;dbl&gt;, stl_e_acf10 &lt;dbl&gt;
 ```
 
+???
+
+* The `features()` computes seasonal and trend features for all time series at once.
+* Time series data collapsed to a bunch of descriptive statistics.
+* The key variables are there that we can link back to the original tsibble.
+
 ---
 
 ## Viz 📈 📉 on a feature space
 
 &lt;img src="figure/viz-feature-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+
+???
+
+* each point represents a time series.
 
 ---
 
@@ -119,6 +175,17 @@ tourism_monthly %&gt;% features(Trips, feat_stl)
 .pull-right[
 &lt;img src="figure/p2-1.png" width="100%" style="display: block; margin: auto;" /&gt;
 ]
+
+???
+
+* a tisbble -&gt; lines
+* the featured table -&gt; scatterplot
+* what they share in common are the key identifiers
+* for example, we want to highlight SYD and see how they behave on the feature space or vice versa.
+* Or find which series corresponds to the highest in trend but lowest in seasonality.
+* Static vis stop us doing this, bc writing lots of code, but this is a natural desire for interactive vis.
+* When we think about interactive viz in R, oh probably build a Shiny app. but shiny requires for UI and logics in server side.
+* What about if without shiny. {crosstalk} for linking between different html widgets.
 
 ---
 
@@ -150,6 +217,11 @@ tourism_shared
 #&gt; 6 1998 Aug ACT   Canberra Business  71.3
 #&gt; # … with 80,690 more rows
 ```
+
+???
+
+* Turn a normal data frame to a mutable data object for easy interactions.
+* spec for specifying structures
 
 ---
 
@@ -195,6 +267,10 @@ subplot(p_l,
     ggplotly(p_br, tooltip = "Region", width = 700, height = 800),
     nrows = 2), widths = c(.4, .6)) %&gt;% highlight(dynamic = TRUE)
 ```
+
+???
+
+Interactive w/o shiny, enabling quick exploration
 
 ---
 
