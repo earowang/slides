@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>.orange[] Conversations in time:</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Earo Wang" />
+    <script src="libs/header-attrs/header-attrs.js"></script>
+    <link rel="stylesheet" href="libs/remark.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# .orange[<i class='far fa-comments'></i>] Conversations in time:
+## interactive visualization to explore structured temporal data
+### Earo Wang
+
+---
+
+
+
+
+
+
+## Time series data is rich
+
+.pull-left[
+.brown[1.] often intrinsically hierarchical
+.center[&lt;img src = "img/tree.png", width = 55%&gt;&lt;/img&gt;]
+]
+.pull-right[
+.brown[2.] different temporal frequencies
+&lt;img src="figure/temp-freq-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+## Australian tourism data
+
+
+```r
+*library(tsibbletalk)
+tourism_monthly
+```
+
+```
+*#&gt; # A tsibble: 80,696 x 5 [1M]
+*#&gt; # Key:       State, Region, Purpose [308]
+#&gt;      Month State Region   Purpose  Trips
+#&gt;      &lt;mth&gt; &lt;chr&gt; &lt;chr&gt;    &lt;chr&gt;    &lt;dbl&gt;
+#&gt; 1 1998 Mar ACT   Canberra Business 111. 
+#&gt; 2 1998 Apr ACT   Canberra Business  93.1
+#&gt; 3 1998 May ACT   Canberra Business  78.1
+#&gt; 4 1998 Jun ACT   Canberra Business  44.3
+#&gt; 5 1998 Jul ACT   Canberra Business 129. 
+#&gt; 6 1998 Aug ACT   Canberra Business  71.3
+#&gt; # … with 80,690 more rows
+```
+
+???
+
+1. hierarchical
+2. Month &gt; Year
+
+---
+
+class: center
+
+## [tidyverts.org](http://tidyverts.org)
+
+&lt;iframe src="http://tidyverts.org" frameborder="0" height="500" width="100%"&gt;
+&lt;/iframe&gt;
+
+---
+
+## Sad charts 🙁
+
+&lt;img src="figure/ggplot-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+
+---
+
+## Viz 📈 📉 on a feature space
+
+
+```r
+library(feasts)
+tourism_monthly %&gt;% features(Trips, feat_stl)
+```
+
+```
+#&gt; # A tibble: 308 × 12
+#&gt;   State           Region Purpose trend_strength seasonal_streng…
+#&gt;   &lt;chr&gt;           &lt;chr&gt;  &lt;chr&gt;            &lt;dbl&gt;            &lt;dbl&gt;
+#&gt; 1 ACT             Canbe… Busine…          0.316            0.332
+#&gt; 2 ACT             Canbe… Holiday          0.220            0.542
+#&gt; 3 ACT             Canbe… Other …          0.212            0.215
+#&gt; 4 ACT             Canbe… Visiti…          0.262            0.429
+#&gt; 5 New South Wales Blue … Busine…          0.185            0.247
+#&gt; 6 New South Wales Blue … Holiday          0.426            0.471
+#&gt; # … with 302 more rows, and 7 more variables:
+#&gt; #   seasonal_peak_year &lt;dbl&gt;, seasonal_trough_year &lt;dbl&gt;,
+#&gt; #   spikiness &lt;dbl&gt;, linearity &lt;dbl&gt;, curvature &lt;dbl&gt;,
+#&gt; #   stl_e_acf1 &lt;dbl&gt;, stl_e_acf10 &lt;dbl&gt;
+```
+
+---
+
+## Viz 📈 📉 on a feature space
+
+&lt;img src="figure/viz-feature-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+
+---
+
+## .orange[&lt;i class='far fa-comments'&gt;&lt;/i&gt;] Crosstalk between lines and points
+
+.pull-left[
+&lt;img src="figure/p1-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+.pull-right[
+&lt;img src="figure/p2-1.png" width="100%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+class: inverse middle
+
+## Let tsibble talk
+
+---
+
+## Syntax sugar: nesting and crossing
+
+
+```r
+tourism_shared &lt;- tourism_monthly %&gt;%
+* as_shared_tsibble(spec = (State / Region) * Purpose)
+tourism_shared
+```
+
+```
+#&gt; # A tsibble: 80,696 x 5 [1M]
+#&gt; # Key:       State, Region, Purpose [308]
+#&gt;      Month State Region   Purpose  Trips
+#&gt;      &lt;mth&gt; &lt;chr&gt; &lt;chr&gt;    &lt;chr&gt;    &lt;dbl&gt;
+#&gt; 1 1998 Mar ACT   Canberra Business 111. 
+#&gt; 2 1998 Apr ACT   Canberra Business  93.1
+#&gt; 3 1998 May ACT   Canberra Business  78.1
+#&gt; 4 1998 Jun ACT   Canberra Business  44.3
+#&gt; 5 1998 Jul ACT   Canberra Business 129. 
+#&gt; 6 1998 Aug ACT   Canberra Business  71.3
+#&gt; # … with 80,690 more rows
+```
+
+---
+
+.pull-left[
+## hierarchy -&gt; tree
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+
+```r
+p_l &lt;- plotly_key_tree(tourism_shared,
+  height = 1100, width = 800)
+p_l
+```
+]
+.pull-right[
+.center[&lt;img src = "img/tree.png", width = 65%, style = "box-shadow: 3px 5px 3px 1px #00000080;"&gt;&lt;/img&gt;]
+]
+
+---
+
+## Shared tsibble `%&gt;%` {ggplot2} &amp; {plotly}
+
+
+```r
+p_tr &lt;- tourism_shared %&gt;%
+  ggplot(aes(x = Month, y = Trips)) +
+  geom_line(aes(group = Region)) +
+  facet_wrap(~ Purpose, scales = "free_y")
+```
+
+```r
+p_br &lt;- tourism_shared %&gt;%
+  features(Trips, feat_stl) %&gt;% 
+  ggplot(aes(x = trend_strength, y = seasonal_strength_year)) +
+  geom_point(aes(group = Region))
+```
+
+```r
+subplot(p_l,
+  subplot(
+    ggplotly(p_tr, tooltip = "Region", width = 700, height = 800),
+    ggplotly(p_br, tooltip = "Region", width = 700, height = 800),
+    nrows = 2), widths = c(.4, .6)) %&gt;% highlight(dynamic = TRUE)
+```
+
+---
+
+.center[&lt;img src = "img/tourism-linking.png", width = 55%, style = "box-shadow: 3px 5px 3px 1px #00000080;"&gt;&lt;/img&gt;]
+
+---
+
+class: inverse middle
+
+## Slicing and dicing
+
+---
+
+count: false
+
+.left-column[
+## Wrapping
+### - overview
+]
+.right-column[
+&lt;img src = "img/wrap-0.png", width = 55%, style = "position:absolute; top: 2.5%; left: 25.5%; box-shadow: 3px 5px 3px 1px #00000080;"&gt;&lt;/img&gt;
+]
+
+---
+
+count: false
+
+.left-column[
+## Wrapping
+### - overview
+### - time of day
+]
+.right-column[
+&lt;img src = "img/wrap-0.png", width = 55%, style = "position:absolute; top: 2.5%; left: 25.5%; box-shadow: 3px 5px 3px 1px #00000080;"&gt;&lt;/img&gt;
+&lt;img src = "img/wrap-1.png", width = 55%, style = "position:absolute; top: 20.5%; left: 42.5%; box-shadow: 3px 5px 3px 1px #00000080;"&gt;&lt;/img&gt;
+]
+
+---
+
+count: false
+
+.left-column[
+## Wrapping
+### - overview
+### - time of day
+### - day of week
+]
+.right-column[
+&lt;img src = "img/wrap-0.png", width = 55%, style = "position:absolute; top: 2.5%; left: 25.5%; box-shadow: 3px 5px 3px 1px #00000080;"&gt;&lt;/img&gt;
+&lt;img src = "img/wrap-1.png", width = 55%, style = "position:absolute; top: 20.5%; left: 42.5%; box-shadow: 3px 5px 3px 1px #00000080;"&gt;&lt;/img&gt;
+&lt;img src = "img/wrap-7.png", width = 55%, style = "position:absolute; top: 50.5%; left: 30.5%; box-shadow: 3px 5px 3px 1px #00000080;"&gt;&lt;/img&gt;
+]
+
+---
+
+## A shiny module
+
+
+```r
+library(shiny)
+p_line &lt;- pedestrian20 %&gt;%
+  ggplot(aes(x = Date_Time, y = Count, colour = Lockdown)) +
+  geom_line(size = .3) +
+  facet_wrap(~ Sensor, scales = "free_y") +
+  labs(x = "Date Time") +
+  scale_colour_brewer(palette = "Dark2") +
+  theme(legend.position = "none")
+
+ui &lt;- fluidPage(
+* tsibbleWrapUI("dice")
+)
+server &lt;- function(input, output, session) {
+* tsibbleWrapServer("dice", ggplotly(p_line, height = 700), period = "1 day")
+}
+shinyApp(ui, server)
+```
+
+---
+
+.center[&lt;img src = "img/shiny-wrap.gif", width = 85%, style = "box-shadow: 3px 5px 3px 1px #00000080;"&gt;&lt;/img&gt;]
+
+---
+
+## Acknowledgements
+
+* {crosstalk}
+* {plotly}
+* {shiny}
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="libs/macros.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "16:9",
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"slideNumberFormat": "<div class=\"progress-bar-container\">\n  <div class=\"progress-bar\" style=\"width: calc(%current% / %total% * 100%);\">\n  </div>\n</div>"
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
