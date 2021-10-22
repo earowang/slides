@@ -10,7 +10,7 @@ watchman watch $PWD
 watchman -- trigger $PWD auto-commit '**/*' -- ./auto-commit.sh
 ```
 
-2. Travis CI runs `tic.R` to update talks in `README.md`. [![Travis-CI Build Status](https://travis-ci.org/earowang/slides.svg?branch=master)](https://travis-ci.org/earowang/slides)
+2. Github action runs `update.R` to update talks in `README.md`.
 3. The slides are powered by Netlify.
 
 ## List of talks (in alphabetical order)
