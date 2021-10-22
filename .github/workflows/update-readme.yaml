@@ -5,7 +5,7 @@ on: push
 name: Talks update
 
 jobs:
-  render:
+  update-list:
     runs-on: macOS-latest
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
@@ -35,7 +35,7 @@ jobs:
 
       - name: Update
         run: |
-          Rscript -e 'source('update.R')'
+          Rscript -e 'source("update.R")'
 
       - name: Commit results
         run: |
