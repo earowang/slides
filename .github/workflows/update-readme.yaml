@@ -1,7 +1,6 @@
-on: 
-  push:
-    paths:
-      - '_site/**'
+on: push
+    # paths:
+    #   - '_site/**'
 
 name: Talks update
 
