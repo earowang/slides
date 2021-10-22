@@ -1,7 +1,6 @@
-on:
-  push:
-    paths:
-      - '_site/'
+on: push
+    # paths:
+    #   - '_site/**'
 
 name: Talks update
 
@@ -15,12 +14,26 @@ jobs:
 
       - uses: r-lib/actions/setup-r@master
 
-      - name: Install dependencies
+      - name: Query dependencies
         run: |
-          install.packages(c('fs', 'whisker'))
+          install.packages('remotes')
+          saveRDS(remotes::dev_package_deps(dependencies = TRUE), ".github/depends.Rds", version = 2)
+          writeLines(sprintf("R-%i.%i", getRversion()$major, getRversion()$minor), ".github/R-version")
         shell: Rscript {0}
 
-      - name: Grade and comment
+      - name: Cache R packages
+        uses: actions/cache@v1
+        with:
+          path: ${{ env.R_LIBS_USER }}
+          key: ${{ runner.os }}-${{ hashFiles('.github/R-version') }}-1-${{ hashFiles('.github/depends.Rds') }}
+          restore-keys: ${{ runner.os }}-${{ hashFiles('.github/R-version') }}-1-
+
+      - name: Install dependencies
+        run: |
+          remotes::install_deps(dependencies = TRUE)
+        shell: Rscript {0}
+
+      - name: Update
         run: |
           Rscript -e 'source('update.R')'
 
