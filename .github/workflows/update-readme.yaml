@@ -1,0 +1,33 @@
+on:
+  push:
+    paths:
+      - '_site/'
+
+name: Talks update
+
+jobs:
+  render:
+    runs-on: macOS-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: r-lib/actions/setup-r@master
+
+      - name: Install dependencies
+        run: |
+          install.packages(c('fs', 'whisker'))
+        shell: Rscript {0}
+
+      - name: Grade and comment
+        run: |
+          Rscript -e 'source('update.R')'
+
+      - name: Commit results
+        run: |
+          git config --local user.email "actions@github.com"
+          git config --local user.name "GitHub Actions"
+          git add .
+          git commit -m 'update list of talks'
+          git push origin
